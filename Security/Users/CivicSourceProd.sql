@@ -1,0 +1,2 @@
+CREATE USER [CivicSourceProd] WITHOUT LOGIN
+GO
