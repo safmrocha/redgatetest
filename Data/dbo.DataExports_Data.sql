@@ -37,20 +37,6 @@ from	cvs.Auctions a
 --where	a.auctiontype = ''adjudication'' and a.state in (20, 30, 40) and a.invoicedon is null and a.auctionid in (select taxsalepropertyid from cvs.auctionstatehistory where tostate > 0)
 where a.AuctionType = ''adjudication'' and a.invoicedon is null and ((a.SaleId is not null and a.state in (10, 30, 40) and (a.state = 40 or pur.status = 0)) or a.state = 20)
 order by s.StartTime, a.[State], p.accountnumber', 'Sale,Account Number,Status,CanceledFromStatus,Price,Amount Due,Closing Date,Closing Status,DistributedToCivicSource,DistributedToInsurance,DistributedToClient,TotalRevenue,Address,City', 102, 1, NULL, 0, NULL, 0, 1, '2016-08-05 13:14:11.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('84f82378-a4b8-4cb6-b97d-06a83d376895', 'Sold Adjudication Auctions', 'Sale Date and Closing Date for all sold adjudication auctions', 0, N'
-  SELECT 
-   ''"'' + p.accountnumber + ''"'',
-   P.Address1,
-   CONVERT(VarChar(10),sale.EndTime,101),
-   Convert(VarChar(10),a.ClosingDate,101),
-   Cast(A.Price as Money),
-   Cast(A.StartingPrice as Money)
-FROM cvs.Properties p
-INNER JOIN cvs.auctions a ON a.PropertyId = p.Id
-INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''Adj''
-WHERE a.state = 30 AND a.AuctionType = ''adjudication''
-ORDER BY sale.EndTime, p.AccountNumber
-', 'Account Number,Address,Sale Date,Closing Date,Winning Bid,Starting Price', 57, 1, N'', 0, '', 0, 1, '2016-08-28 21:27:30.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('b9f750d9-f716-4ded-9768-07134b7cfd08', 'Scheduled but in research adj', 'Accounts that are in research, but scheduled for a sale, possibly erroneously', 0, N'declare @prefix varchar(3)
 set @prefix = (select Prefix from civicsource.dbo.taxauthorities ta where safename = REPLACE(db_name(),''CivicSource_'',''''))
 
@@ -170,29 +156,6 @@ GROUP BY s.SaleId ,
 		s.SaleType,
         s.StartTime;
 ', 'SaleId,SaleType,StartTime,CanceledCnt,SoldCnt,NotSoldCnt', 4, 1, NULL, 0, NULL, 0, 1, '2016-08-23 21:42:27.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('6bed0863-b195-4f1b-853d-15c57c972f77', 'Adjudication Sale Results for Jonah', 'Adjudication Sale Results for Jonah', 0, N'SELECT p.AccountNumber ''Tax Bill Number'',			
-p.Address1 + CASE WHEN p.Address2 IS NOT NULL THEN '' '' + p.Address2 ELSE '''' END ''Address'',			
-a2.currentPrice ''Price'', 					
-res.name ''Abstract queue'', 			
-res.username ''Abstractor''			
-FROM cvs.Properties p			
-INNER JOIN cvs.auctions a ON a.PropertyId = p.Id			
-INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId	AND SaleType = ''Adj''	
-INNER JOIN PRODAUCTION.auction.dbo.auction a2 ON a2.id = a.AuctionId			
-INNER JOIN CivicSource.dbo.TaxAuthorities ta ON ''civicsource_'' + ta.SafeName = DB_NAME()
-LEFT JOIN (SELECT r.propertyid, q.name, agent.username, acc.accountnumber, acc.groupname FROM 			
-			PRODRESEARCH.research.res.researches r
-			INNER JOIN PRODRESEARCH.research.res.accounts acc ON acc.propertyid = r.propertyid
-			INNER JOIN PRODRESEARCH.research.res.queues q ON q.id = r.queueid AND (q.name LIKE ''%abstract%'' OR q.name LIKE ''%legacy%'')
-			INNER JOIN PRODRESEARCH.research.res.agents agent ON agent.id = r.assigneeid) res ON res.accountnumber = p.AccountNumber AND res.groupname = ta.Prefix
-WHERE a.state = 30 AND a.SaleId = ''<FILTER>''				
-', 'Tax Bill Number,Address,Price,Abstract Queue,Abstractor', 136, 1, N'SELECT
-CONVERT(VARCHAR(100), StartTime, 106) + '' Sale'',
-SaleId
-FROM cvs.Sales
-WHERE EndTime < GETDATE()
-AND SaleType = ''Adj''
-ORDER BY StartTime desc', 0, 'Adjudication Sale', 0, 0, '2016-08-04 17:00:56.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('517aef7f-afd0-4b05-badc-18b536c1d696', '# Properties 4 Sale', 'Number of properties for sale in each TA', 0, N'select count(*) from cvs.auctions where state=10', 'Count', 38, 1, NULL, 0, NULL, 0, 1, '2016-06-28 20:32:37.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('2a131891-8eff-408c-b5ec-1bb2d2d4c359', 'Public Accounts with Occupancy Report Status', 'Report showing account numbers and if there is an occupancy report for that account', 0, N'
 SELECT ''"'' + P.AccountNumber + ''"''
@@ -224,18 +187,6 @@ INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query
 		where year(shouldbemailedby) = year(getdate()) and month(shouldbemailedby) = month(getdate())
 		and state <> 8
 		group by iscertified, state', 'IsCertified,State,Count', 12, 1, NULL, 0, NULL, 0, 1, '2016-08-19 20:34:20.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('a84c5d1d-0970-45e4-8d87-2605b9c2d3aa', 'CNO Payment File Summary', '**Works only for CNO** Sums owner payments by month and year for invoicing', 0, N'SELECT	DATEPART(m, appliedat) [Month], datepart(yy, appliedat) [Year], 
-		SUM(case when tt.TaxCode IN (''66'', ''51'', ''67'') then interest + penalty else balance + interest + penalty end) Tax, 
-		sum(case when tt.TaxCode  = ''51'' then balance else 0 end) [TC51],  
-		sum(case when tt.TaxCode  = ''66'' then balance else 0 end) [TC66], 
-		sum(case when tt.TaxCode  = ''67'' then balance else 0 end) [TC67],   
-		sum([collection]) [Collection Fee], sum(total) Total
-from  cvs.propertypayments pp
-INNER JOIN cvs.TaxTypes tt ON tt.TaxTypeId = pp.TaxTypeId
-left OUTER JOIN cvs.propertypaymenttypes ppt ON ppt.propertypaymenttypeid = pp.propertypaymenttypeid
-WHERE ppt.TransactionCode IS NULL OR ppt.TransactionCode NOT IN (''090'')
-group by datepart(yy, appliedat), datepart(m, appliedat)
-order by [Year], [Month]', 'Month,Year,Tax,TC51,TC66,TC67,Collection Fee,Total', 110, 1, NULL, 0, NULL, 0, 0, '2016-05-31 19:24:39.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('116cd310-788e-43e9-a4ac-2a6b573417e2', 'Auctioneer Users Created', 'Count of # of Auctioneer user profiles created per day (after 10/9/2014)', 0, N'/****** Script for SelectTopNRows command from SSMS  ******/
 SELECT CAST(CAST(CreatedOn AS DATE) AS VARCHAR(10)), COUNT(*)
   FROM [CivicSource].[dbo].[AuctioneerProfiles]
@@ -279,243 +230,6 @@ inner join cvs.Properties p on p.id = a.propertyid
 where a.auctiontype = ''adjudication'' and a.state = 30
 and purch.Status = 0
 group by ap.State', 'State,Count', 9, 1, NULL, 0, NULL, 0, 1, '2016-08-10 15:11:12.000', '1', NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('afed8a41-eda3-4a4f-b9aa-36c239e939eb', 'CNO 2015 Immovable Properties - Call Lists', 'CNO April 2015 tax sale immovable properties that have an amount due greater than zero with owner contact information', 0, N'with Accounts (accountnumber) AS (
-	select accountnumber from (
-	select	p.accountnumber, p.id, p.amountdue
-	from	cvs.properties p
-	where	p.status = 2 and p.isadjudicated = 0 and p.taxclass != 3 and
-			p.propertytype = 0 and accountnumber not in (
-				select accountnumber from cvs.propertyexclusions where propertytype = 0 and (expireson is null or expireson > getdate())) and
-			p.isbankrupt = 0 and p.id not in (
-				select propertyid from cvs.propertytaxes pt inner join cvs.taxtypes tt on pt.taxtypeid = tt.taxtypeid where pt.total > 0 and tt.category = 1) and
-			(p.id in (
-				select	propertyid
-				from	cvs.propertytaxes pt
-						inner join cvs.taxtypes tt
-							on tt.taxtypeid = pt.taxtypeid
-				where	tt.category in (0,3) and pt.year between 2014 and 2014 and pt.total > 0
-				group by propertyid
-				having sum(total) >= 100) or
-			(p.id in (
-				select	propertyid
-				from	cvs.propertytaxes pt
-						inner join cvs.taxtypes tt
-							on tt.taxtypeid = pt.taxtypeid
-				where	tt.category in (0,3) and pt.year between 2012 and 2014 and pt.total > 0
-				group by propertyid
-				having sum(total) >= 100) and 
-			p.id not in (
-				select propertyid
-				from	cvs.auctions
-				where	saleid = ''937FED1E-C413-45F5-8DB3-A2F90108B55C'' and state = 10))) 
-				) a
-)
-
-SELECT '' '' + p.AccountNumber + '' '',
-dbo.GetPropertyOwnerName(p.PropertyOwnerId) ''Owner Name'',
-CASE WHEN poa.Address1 is null or LEN(poa.Address1) = 0 then '''' else poa.Address1 + '', '' end
-+ CASE WHEN poa.Address2 is null or LEN(poa.Address2) = 0 then '''' else poa.Address2 + '', '' end
-+ CASE WHEN poa.City is null or LEN(poa.City) = 0 then '''' else poa.City + '', '' end
-+ CASE WHEN poa.State is null or LEN(poa.State ) = 0 then '''' else poa.State + '' '' end
-+ CASE WHEN poa.PostalCode is null or LEN(poa.PostalCode) = 0 then '' '' else poa.PostalCode + '', '' end
-+ CASE WHEN poa.Country is null or LEN(poa.Country ) = 0 then '' '' else poa.Country end ''Owner Address'',
-coll.Balance ''Balance'',
-CASE WHEN coll.PropertyId is null then ''No'' else ''Yes'' END ''Collection Fee''
-  FROM [cvs].[Properties] p
-  inner join Accounts on Accounts.accountnumber = p.AccountNumber
-  inner join cvs.PropertyOwners po on po.PropertyOwnerId = p.PropertyOwnerId
-  inner join cvs.PropertyOwnerAddresses poa on poa.PropertyOwnerId = po.PropertyOwnerId and poa.AddressIndex = 0
-  left outer join (
-select pt.PropertyId, SUM(pt.Balance) ''Balance'' from cvs.PropertyTaxes pt
-inner join cvs.TaxTypes tt on tt.TaxTypeId = pt.TaxTypeId
-where tt.Category = 5 or pt.Collection > 0
-group by pt.PropertyId ) coll on coll.PropertyId = p.Id
-
-  order by p.AccountNumber', 'Account Number, Owner Name, Owner Address, Balance, Collection Fee', 26, 1, NULL, 0, NULL, 0, 0, '2016-04-27 18:36:49.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('f793cb7f-0a21-47b9-bfe2-4601864cbcd9', 'CNO Payment File Summary (with payment types)', '**Works only for CNO** Sums owner payments by month, year, and payment type (On time, late with interest, etc.)', 0, N'SELECT	DATEPART(m, appliedat) [Month], datepart(yy, appliedat) [Year], 
-	SUM(CASE WHEN ppt.transactioncode = ''090'' THEN pp.Total ELSE 0 END) [090 Temporary credit],
-	SUM(CASE WHEN ppt.transactioncode = ''100'' THEN pp.Total ELSE 0 END) [100 Timely payment],
-	SUM(CASE WHEN ppt.transactioncode = ''110'' THEN pp.Total ELSE 0 END) [110 Late payment with interest],
-	SUM(CASE WHEN ppt.transactioncode = ''160'' THEN pp.Total ELSE 0 END) [160 Tax sale],
-	SUM(CASE WHEN ppt.transactioncode = ''170'' THEN pp.Total ELSE 0 END) [170 Redemption Payment],
-	SUM(CASE WHEN ppt.transactioncode IS null THEN pp.Total ELSE 0 END) [NULL Unknown]
-from  cvs.propertypayments pp
-left OUTER JOIN cvs.propertypaymenttypes ppt ON ppt.propertypaymenttypeid = pp.propertypaymenttypeid
-group by datepart(yy, appliedat), datepart(m, appliedat)
-order by [Year], [Month]', 'Year,090 Temporary credit,100 Timely payment,110 Late payment with interest,160 Tax sale,170 Redemption Payment,NULL Unknown', 9, 1, NULL, 0, NULL, 0, 0, '2016-05-22 01:53:22.000', NULL, NULL)
-EXEC(N'INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES (''a18ed863-b074-47ad-84d8-46351249aaf9'', ''Verify Encoded Fees and Cost'', ''Report showing encodings to date for a selected tax sale'', 0, N''Declare @ltFeesandCost Table
-(
-PropertyID UniqueIdentifier,
-AccountNumber VarChar(500),
-IsAdjudicated VarChar(3),
-IsExcluded VarChar(3),
-IsBankrupt VarChar(3),
-IsMobileHome VarChar(3),
-TaxSale VarChar(500),
-TaxSaleState VarChar(25),
-PropertyType VarChar(25),
-ProType Int,
-TaxYear Int,
-TaxesDue Money,
-Interest Money,
-ArchonFee Money,
-CurrentCost Money,
-CurrentDate DateTime
-)
- 
-Insert Into @ltFeesandCost 
- Select
-    P.ID, 
-    ''''"'''' + p.AccountNumber + ''''"'''', 
-	Case
-	   When p.IsAdjudicated = 1 Then ''''Yes''''
-	   Else ''''No''''
-	End,
-	Null,
-	Case
-	   When p.IsBankrupt = 1 Then ''''Yes''''
-	   Else ''''No''''
-    End,
-	Case
-	   When p.IsMobileHome = 1 Then ''''Yes''''
-	   Else ''''No ''''
-	End,
-	Null,
-	Null,
-	Case
-      When P.PropertyType = 0 Then ''''Real Estate''''
-      When P.PropertyType = 1 Then ''''Personal Property''''
-    End,
-	P.PropertyType,
-	PT.Year,
-	Null,
-	Null,
-	Null,
-	Null,
-	Null
-From cvs.Properties P
-Join cvs.PropertyTaxes PT On PT.PropertyId = P.Id
-Where PT.Status != 0
-Group by P.ID, P.AccountNumber,P.PropertyType,PT.Year, P.IsAdjudicated, P.IsBankrupt, P.IsMobileHome
-
-Update @ltFeesAndCost
-Set TaxesDue = 0,
-    Interest = 0,
-    ArchonFee = 0,
-    CurrentCost = 0
-
-Update FC
-   Set TaxSale = IsNull((Select Top 1 Upper(Left(DateName(MM,TS.StartTime),3)) + '''' '''' + DateName(YYYY,TS.StartTime) + '''' '''' + Upper(TS.SaleType) + '''' SALE ('''' + TS.Code + '''')''''
-                     From cvs.Sales As TS
-                     Join cvs.Auctions As A On A.SaleID = TS.SaleId
-                     Where GetDate() <= TS.EndTime and A.PropertyID = FC.PropertyID and
-                     A.State In (10,20,30,40) and A.PropertyID = FC.PropertyID),''''No'''')
-From @ltFeesAndCost as FC
-
-Update FC
-   Set TaxSaleState = IsNull((Select Top 1 
-                     Case
-					    When A.State = 10 Then ''''For Sale''''
-						When A.State = 20 Then ''''Canceled''''
-						When A.State = 40 Then ''''Not Sold''''
-						When A.State = 20 Then ''''Sold''''
-						Else ''''Unknown''''
-					 End
-                     From cvs.Sales As TS
-                     Join cvs.Auctions As A On A.SaleID = TS.SaleId
-                     Where GetDate() <= TS.EndTime and A.PropertyID = FC.PropertyID and
-                     A.State In (10,20,30,40) and A.PropertyID = FC.PropertyID),'''''''')
-From @ltFeesAndCost as FC
-
-Update FC
-   Set IsExcluded = IsNull((Select Top 1 ''''Yes''''
-                       From cvs.PropertyExclusions as PE
-                       Where PE.AccountNumber = FC.AccountNumber and 
-                       PE.PropertyType = FC.ProType and 
-                       PE.ExpiresOn >= GetDate()
-                       Order By PE.ExpiresOn),''''No'''')
-From @ltFeesAndCost as FC
-
-Update FC
-   Set TaxesDue = (Select IsNull(Sum(Balance), 0.00)
-                   From cvs.PropertyTaxes PT
-                   Join cvs.TaxTypes as TT On TT.TaxTypeID = PT.TaxTypeID
-                   Where PT.PropertyID = FC.PropertyID and
-                         PT.Year = FC.TaxYear and
-                         TT.Category In (0,2,3))
-From @ltFeesAndCost as FC
-
-Update FC
-   Set Interest = (Select IsNull(Sum(Interest), 0.00)
-                   From cvs.PropertyTaxes PT
-                   Join cvs.TaxTypes as TT On TT.TaxTypeID = PT.TaxTypeID
-                   Where PT.PropertyID = FC.PropertyID and
-                         PT.Year = FC.TaxYear) + FC.Interest
-From @ltFeesAndCost as FC
-
-Update FC
-   Set Interest = (Select IsNull(Sum(Balance), 0.00)
-                   From cvs.PropertyTaxes PT
-                   Join cvs.TaxTypes as TT On TT.TaxTypeID = PT.TaxTypeID
-                   Where PT.PropertyID = FC.PropertyID and
-                         TT.Category = 7 and
-                         PT.Year = FC.TaxYear) + FC.Interest
-From @ltFeesAndCost as FC
-
-Update FC
-   Set ArchonFee = (Select IsNull(Sum(Collection),0.00)
-                   From cvs.PropertyTaxes PT
-                   Join cvs.TaxTypes as TT On TT.TaxTypeID = PT.TaxTypeID
-                   Where PT.PropertyID = FC.PropertyID and
-                '', ''Account Number,Is Adjudicated,Is Excluded,Is Bankrupt,Is MobileHome,Tax Sale,Tax Sale State,Property Type,Tax Year,Taxes Due,Interest,Archon 10% Fee,Encoding to date,Last Encoded'', 47, 1, NULL, 0, NULL, 0, 0, ''2016-08-30 19:04:27.000'', NULL, NULL)')
-UPDATE [dbo].[DataExports] SET [Query].WRITE(N'         PT.Year = FC.TaxYear) + FC.ArchonFee
-From @ltFeesAndCost as FC
-
-Update FC
-   Set ArchonFee = (Select IsNull(Sum(Balance),0.00)
-                   From cvs.PropertyTaxes PT
-                   Join cvs.TaxTypes as TT On TT.TaxTypeID = PT.TaxTypeID
-                   Where PT.PropertyID = FC.PropertyID and
-                         PT.Year = FC.TaxYear and
-                         TT.Category = 6) + FC.ArchonFee
-From @ltFeesAndCost as FC
-
-Update FC
-   Set CurrentCost = IsNull((Select Sum(PT.Balance)
-                     From cvs.PropertyTaxes PT
-                     Join cvs.TaxTypes as TT On TT.TaxTypeID = PT.TaxTypeID
-                     Where PT.PropertyID = FC.PropertyID and
-                     PT.Year = FC.TaxYear and TT.Category = 5),0.00)
-From @ltFeesAndCost as FC
-
-Update FC
-   Set CurrentDate = (Select Top 1 PTV.ChangeDate
-                     From cvs.PropertyTaxVersions PTV
-                     Join cvs.PropertyTaxes as PT On PT.ID = PTV.TaxID
-                     Join cvs.TaxTypes as TT On TT.TaxTypeID = PT.TaxTypeID
-                     Where PT.PropertyID = FC.PropertyID and
-                     PT.Year = FC.TaxYear and
-                     TT.Category = 5
-                     Order By PTV.ChangeDate Desc)
-From @ltFeesAndCost as FC
-	
-
-Select
-   AccountNumber,
-   IsAdjudicated,
-   IsExcluded,
-   IsBankrupt,
-   IsMobileHome,
-   TaxSale,
-   TaxSaleState,
-   PropertyType,
-   TaxYear,
-   TaxesDue,
-   Interest,
-   ArchonFee,
-   CurrentCost,
-   CONVERT(VarChar(10),CurrentDate,101)
-From @ltFeesandCost',NULL,NULL) WHERE [Id] = 'a18ed863-b074-47ad-84d8-46351249aaf9'
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('99ff9bcd-195c-46ac-b6b1-488cdf564022', 'Adjudication Purchasers', 'Total purchases for users across all TAs', 0, N'select ap.FirstName, ap.LastName, ap.Email, count(*)
 from cvs.auctions a
 inner join cvs.PrimaryMarketPurchases pmp on pmp.auctionid = a.auctionid
@@ -525,15 +239,6 @@ inner join CivicSource.dbo.auctioneerprofiles ap on ap.username = purchaster.use
 where a.auctiontype = ''adjudication'' and purch.status = 0
 group by ap.FirstName, ap.LastName, ap.Email
 order by count(*) desc', 'First Name,Last Name,Email,#Purchases', 8, 1, NULL, 0, NULL, 0, 1, '2016-08-10 15:11:24.000', '1,2,3', NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('abec9002-b1c2-4d80-b270-4a6151229ac8', 'Tax Sale Count with total due', 'Multi-TA query of tax sale with property counts and total due', 0, N'SELECT 
-			   LEFT(DATENAME( m, StartTime),3) +'' ''+ DATENAME(yyyy,StartTime) + '' Tax Sale'' AS Name,
-			   Count(P.AccountNumber),
-			   IsNull(Cast(Sum(A.Price) As Money),0.00) [Amount Due]
-			FROM [cvs].[Properties] P
-			Join cvs.Auctions A On A.PropertyID = P.ID
-			Join cvs.sales TS On TS.SaleId = A.SaleId AND SaleType = ''Tax''
-			Where A.State = 10 and A.AuctionType = ''TaxSale''  
-			Group By LEFT(DATENAME( m, StartTime),3) +'' ''+ DATENAME(yyyy,StartTime) + '' Tax Sale'' ', 'Tax Sale,For Sale Count,Total Due', 11, 1, NULL, 0, NULL, 0, 1, '2016-06-29 14:21:55.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('f896512a-39f1-4c23-b3c7-55fb827193d2', 'Movable Status Changes', 'Movable status changes, filtered by a date range', 0, N'SELECT p.AccountNumber, pn.StatusChangeName, pn.Note, pn.CreatedOn
   FROM [cvs].[PropertyNotes] pn
   inner join cvs.Properties p
@@ -541,129 +246,11 @@ INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query
   where StatusChangeName is not null and p.PropertyType = 1
   and CreatedOn >= ''<START>'' and CreatedOn <= ''<END>''
   order by AccountNumber, CreatedOn', 'Account Number,Status,Note,Date', 27, 1, NULL, 0, NULL, 1, 0, '2016-08-10 15:38:06.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('06045590-90a0-4eb3-898d-5b03c56bbb48', 'Change Orders By Tax Sale', 'Change orders details filtered by tax sale', 0, N'select p.AccountNumber, 
- p.Address1 [Address], 
- case a.[State]
- when 0 then ''Not For Sale''
- when 10 then ''For Sale''
- when 20 then ''Canceled''
- when 30 then ''Sold''
- when 40 then ''Not Sold''
- end AuctionStatus,
- case pco.[Status]
- when 0 then ''Pending''
- when 1 then ''Approved''
- when 2 then ''Rejected''
- end [Status], 
- pco.SubmittedOn, 
- pco.TaxYear,
- Replace(Replace(pco.ChangeReason,Char(13),''''),Char(10),'''') ChangeReason
- from cvs.Auctions a 
- join cvs.Properties p 
- on a.PropertyId = p.Id 
- join cvs.PropertyChangeOrders pco 
- on pco.PropertyId = p.Id 
- where a.SaleId = ''<FILTER>''
- order by p.AccountNumber, pco.TaxYear', 'Account Number, Property Address, Auction Status, Status, Submitted On, Tax Year, Change Reason', 113, 1, N'SELECT  LEFT(DATENAME(m, StartTime), 3) + '' '' + DATENAME(yyyy, StartTime)
-        + '' Tax Sale'' AS Name ,
-        ts.SaleId
-FROM    cvs.Sales ts
-        INNER JOIN ( SELECT MAX(EndTime) ed ,
-                            SaleId
-                     FROM   cvs.Sales
-                     WHERE  SaleType = ''Tax''
-                     GROUP BY SaleId
-                   ) x ON x.SaleId = ts.SaleId
-WHERE   SaleType = ''Tax''
-ORDER BY x.ed DESC', 0, 'Tax Sale', 0, 0, '2016-08-30 13:49:04.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('f06c1b53-aebc-4747-8d97-5c3f1f15fda5', 'Expired Bankruptcy Exclusions', 'Expired Bankruptcy Exclusions', 0, N'select 
 replace(db_name(),''civicsource_'',''''), AccountNumber, case propertytype when 0 then ''Immovable'' else ''Movable'' end, ExpiresOn, Source
   FROM [cvs].[PropertyExclusions]
   where type like ''%Bankruptcy%'' and ExpiresOn < getDate()
   order by propertyType, AccountNumber', 'Taxing Authority,Account Number,Property Type,Expiration,Source', 6, 1, NULL, 0, NULL, 0, 1, '2016-04-27 19:02:00.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('9bff5381-7479-491c-89f0-62df8d817a79', 'Scheduled Adjudication Sales', 'Multi-TA query of properties scheduled for adj sales', 0, N'      
-SELECT ''"'' + p.AccountNumber + ''"'',
-p.Address1 + CASE WHEN p.address2 IS NOT NULL AND LEN(p.Address2) > 0 THEN '' '' + p.Address2 ELSE '''' END ''Address'',
-a.Price ''Current Price'',
-CAST(sale.StartTime AS DATE) ''Sale Date'',
-d.Name ''Depositor Name'',
-d.NameOnDeed ''Depositor Name on Deed'',
-d.phone ''Depositor Phone'',
-d.DepositMadeOn ''Deposit Made On'',
-CONVERT(VarChar(10),Sale.LockedOn,101),
-Case
-      When (SELECT Count(Da.AttributeValue) 
-	           FROM [doc].[Documents] d
-               Join doc.DocumentAttributes da On da.DocumentId = d.DocumentId and Da.AttributeName = ''Account Number''
-               where d.DocumentTypeId = (Select DocumentTypeID 
-			                                From doc.DocumentTypes DT 
-											Where DT.Name = ''Occupancy Report'')  and Da.AttributeValue = P.AccountNumber) > 0 Then ''Yes''
-	  Else ''No''
-End,
-Case
-      When (SELECT Count(Da.AttributeValue) 
-	           FROM [doc].[Documents] d
-               Join doc.DocumentAttributes da On da.DocumentId = d.DocumentId and Da.AttributeName = ''Account Number''
-               where d.DocumentTypeId = (Select DocumentTypeID 
-			                                From doc.DocumentTypes DT 
-											Where DT.Name = ''Constructive Notice Signs'')  and Da.AttributeValue = P.AccountNumber) > 0 Then ''Yes''
-	  Else ''No''
-End
-FROM cvs.Properties p
-INNER JOIN cvs.auctions a ON a.PropertyId = p.Id
-INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''Adj''
-left join (select d.auctionid, ap.FirstName + '' '' + ap.LastName as name, ap.NameOnDeed, ''(''+ ap.AreaCode+ '') '' + ap.Prefix + ''-'' + ap.Suffix as phone, d.DepositMadeOn
-			from cvs.deposits d
-			inner join cvs.Purchasers pu on d.PurchaserId = pu.PurchaserId
-			inner join CivicSource.dbo.AuctioneerProfiles ap on ap.username = pu.username
-			where d.status <> 2 ) d on d.auctionid = a.auctionid
-
-WHERE a.State = 10
-ORDER BY sale.StartTime, p.AccountNumber', 'Tax Bill Number,Address,Current Price,Sale Date,Depositor Name,Depositor Name On Deed,Depositor Phone,Deposit Made On,Lock Date,Occupancy Report,Constructive Notice Sign', 132, 1, NULL, 0, NULL, 0, 1, '2016-08-29 16:14:52.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('6bedcc1d-74da-4da2-a9ed-631210c5fca1', 'Combined skiptracing report', 'Research and forwarding skiptrace report', 0, N'declare @datestart as date
-set @datestart = CAST(''<START>'' as DATE) 
-
-select ForwardingAddressModifiedBy, 0, 0, count(*) fwdAddr, cast(@datestart as varchar(10))
-from mail.Letters l
-where ForwardingAddressModifiedBy is not null
-and cast(ForwardingAddressModifiedOn as date) >= @datestart and cast(ForwardingAddressModifiedOn as date) < DATEADD(day,7,@datestart)
-group by ForwardingAddressModifiedBy', 'AGENT,RESEARCH ACCOUNT #,RESEARCH ADDRESSES #,FORWARDING ADDRESSES #,WEEK STARTING', 4, 1, NULL, 0, NULL, 1, 1, '2016-06-15 16:47:09.000', '1,5', N'declare @datestart as date
-set @datestart = CAST(''<START>'' as DATE) 
-
-select addresses.createdby, 
-properties.cntprop,
-addresses.cntaddr,
-0,
-cast(@datestart as varchar(10))
-from (select createdby, count(*) cntaddr
-	from prodresearch.research.res.recipients
-	where cast(createdon as date) >= @datestart and cast(createdon as date) < DATEADD(day,7,@datestart)
-	group by createdby) addresses
-inner join (select createdby, count(distinct(propertyid)) cntprop
-	from prodresearch.research.res.recipients
-	where cast(createdon as date) >= @datestart and cast(createdon as date) < DATEADD(day,7,@datestart)
-	group by createdby) properties on properties.createdby = addresses.createdby')
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('7311418b-c70c-4ce9-8428-649620027aa7', 'Unsold Taxes', 'Unsold taxes at tax sale for each bill number', 0, N'SELECT p.AccountNumber, st.Year, typ.TaxCode,
-''$'' + CONVERT(varchar(20), CONVERT(money,st.Balance),1),  ''$'' + CONVERT(varchar(20), CONVERT(money,st.Interest),1),  ''$'' + CONVERT(varchar(20), CONVERT(money,st.Penalty),1),  ''$'' + CONVERT(varchar(20), CONVERT(money,st.Collection),1)
-FROM [cvs].[SellableTaxes] st
-inner join cvs.Auctions a on a.AuctionId = st.TaxSalePropertyId
-inner join cvs.Sales ts on ts.SaleId = a.SaleId AND SaleType = ''Tax''
-inner join cvs.Properties p on p.Id = a.PropertyId
-inner join cvs.TaxTypes typ on typ.TaxTypeId = st.TaxTypeId
-where a.State = 40 and ts.SaleId = ''<FILTER>''
-order by p.AccountNumber, st.Year, typ.TaxCode	', 'Acount Number, Year, Tax Code, Tax, Interest, Penalty, Collection', 26, 1, N'SELECT  LEFT(DATENAME(m, StartTime), 3) + '' '' + DATENAME(yyyy, StartTime)
-        + '' Tax Sale'' AS Name ,
-        ts.SaleId
-FROM    cvs.Sales ts
-        INNER JOIN ( SELECT MAX(EndTime) ed ,
-                            SaleId
-                     FROM   cvs.Sales
-                     WHERE  SaleType = ''Tax''
-                     GROUP BY SaleId
-                   ) x ON x.SaleId = ts.SaleId
-WHERE   SaleType = ''Tax''
-AND GETDATE() > EndTime
-ORDER BY x.ed DESC', 0, 'Tax Sale', 0, 0, '2016-08-30 19:03:48.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('81452706-8214-42f5-9bb3-6a574563230b', 'Archon From The Beginning', 'Auctions Listed, Sold Auctions, Number of Bids since Archon started', 0, N'SELECT  ( SELECT    SUM(cnt.cnt) cnt
           FROM      ( SELECT    COUNT(DISTINCT ( p.AccountNumber )) cnt
                       FROM      [mail].[Campaigns] c
@@ -767,30 +354,6 @@ GROUP BY s.StartTime, p.AccountNumber, p.Address1', 'Sale Date,Account Number,Ad
     where yl.year + 1 <= YEAR(GetDate())
 )
 select cast(year as varchar(50)) AS name, year as year from yearlist order by year DESC', 0, 'Year', 0, 1, '2016-08-09 16:32:43.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('a0e41f82-78a2-4194-a143-6da8c2c461f4', 'Adjudication Sale Properties Results', 'Results of past adjudication sales for Brian / Walter', 0, N'
-SELECT p.AccountNumber,
-p.Address1 + CASE WHEN p.Address2 IS NOT NULL THEN '' '' + p.Address2 ELSE '''' END,
-a.startingprice,
-a.Price,
-pmp.NameOnDeed,
-ap.FirstName + '' '' + ap.LastName,
- ap.Email,
-''('' + ap.AreaCode + '') '' + ap.Prefix + ''-'' + ap.Suffix
-FROM cvs.Properties p
-INNER JOIN cvs.auctions a ON a.PropertyId = p.Id
-INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''Adj''
-INNER JOIN cvs.PrimaryMarketPurchases pmp ON pmp.AuctionId = a.AuctionId
-INNER JOIN cvs.Purchases pur ON pur.PurchaseId = pmp.PurchaseId and pur.status = 0
-INNER JOIN cvs.Purchasers puser ON puser .PurchaserId = pur.Purchaser
-INNER JOIN civicsource.dbo.auctioneerprofiles ap ON ap.username = puser.username
-WHERE a.state = 30 AND a.SaleId = ''<FILTER>''
-  ', 'Tax Bill Number,Address,Starting Price,Price,Winner Name on Deed,Winner,Winner Email,Winner Telephone', 135, 1, N'SELECT
-CONVERT(VARCHAR(100), StartTime, 106) + '' Sale'',
-SaleId
-FROM cvs.Sales
-WHERE EndTime < GETDATE()
-AND SaleType = ''Adj''
-ORDER BY StartTime desc', 0, 'Adjudication Sale', 0, 0, '2016-08-09 16:27:02.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('51efc434-e995-4a6a-ab60-6fcf274e0dd3', 'Tax Sale Cost - Verification', 'Compairs tax sale cost on the auctions to tax sale cost on the properties', 0, N'
 Select
    ''"'' + P.AccountNumber + ''"'',
@@ -823,20 +386,6 @@ Order by AccountNumber, ST.Year, TaxCode
 FROM    cvs.Sales ts
 WHERE   SaleType = ''tax''
 ORDER BY EndTime DESC', 0, 'Tax Sale', 0, 0, '2016-08-30 19:11:28.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('a292fd6d-3e51-4a8c-850d-704316f33e42', 'Properties in Tax Sale', 'All uncanceled properties in a tax sale', 0, N'
-SELECT distinct LEFT(DATENAME( m, StartTime),3) +'' ''+ DATENAME(yyyy,StartTime) + '' Tax Sale'' AS Name  , ''"'' + p.AccountNumber + ''"''   ,p.Address1 + CASE p.Address2 WHEN null then '' '' ELSE '' '' + p.Address2 END ''Address''  ,p.LegalDescription   ,dbo.GetPropertyOwnerName(o.PropertyOwnerId)  , CASE WHEN poa.Address1 is null or LEN(poa.Address1) = 0 then '''' else poa.Address1 + '', '' end   + CASE WHEN poa.Address2 is null or LEN(poa.Address2) = 0 then '''' else poa.Address2 + '', '' end   + CASE WHEN poa.City is null or LEN(poa.City) = 0  then '''' else poa.City + '', '' end   + CASE WHEN poa.State  is null or LEN(poa.State ) = 0  then '''' else poa.State + '' '' end   + CASE  WHEN poa.PostalCode is null or LEN(poa.PostalCode) = 0  then '''' else poa.PostalCode + '', '' end  + CASE WHEN poa.Country is null or LEN(poa.Country ) = 0  then '''' else poa.Country end  ''Owner Address''   , p.AmountDue         FROM cvs.Auctions a INNER JOIN cvs.Sales ts on a.SaleId = ts.SaleId AND SaleType = ''Tax'' INNER JOIN cvs.Properties p on a.PropertyId = p.Id  INNER JOIN cvs.PropertyOwners o on p.PropertyOwnerId = o.PropertyOwnerId  INNER JOIN cvs.PropertyOwnerAddresses poa on o.PropertyOwnerId = poa.PropertyOwnerId    WHERE ts.SaleId = ''<FILTER>''   AND a.State !=20  AND poa.Source = 2
-', 'Tax Sale, AccountNumber, Address, Legal, Owner Name, Owner Address, Amount Due', 1094, 1, N'SELECT  LEFT(DATENAME(m, StartTime), 3) + '' '' + DATENAME(yyyy, StartTime)
-        + '' Tax Sale'' AS Name ,
-        ts.SaleId
-FROM    cvs.Sales ts
-        INNER JOIN ( SELECT MAX(EndTime) ed ,
-                            SaleId
-                     FROM   cvs.Sales
-                     WHERE  SaleType = ''Tax''
-                     GROUP BY SaleId
-                   ) x ON x.SaleId = ts.SaleId
-WHERE   SaleType = ''Tax''
-ORDER BY x.ed DESC', 0, 'Tax Sale', 0, 0, '2016-08-23 22:05:57.000', NULL, NULL)
 EXEC(N'INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES (''18835eba-d545-409d-91bf-745204cfc56e'', ''Research Progress'', ''Counts of research items completed going back 30 days per queue type'', 0, N''
   SELECT ''''Date'''' as QueueType
   ,cast(dateadd(day,-30,CONVERT(date, getdate())) AS VARCHAR(10)) as [-30] 
@@ -1111,9 +660,6 @@ order by 1 desc,4,3''
 exec sp_executesql @Sql
 
 ', '', 43, 1, NULL, 0, NULL, 0, 0, '2016-08-30 22:11:16.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('2bb82391-6011-4bb8-bf24-7b2981dcadce', 'Auctions For Sale (All TAs)', 'TA Prefix and Account Number for all for sale auctions.', 0, N'SELECT ts.TaxAuthorityPrefix, p.AccountNumber, ts.*, a.* 
-FROM cvs.properties p inner join cvs.auctions a on a.propertyid = p.id inner join cvs.sales ts on ts.saleid = a.saleid AND SaleType = ''Tax'' where a.state = 10 
-AND a.AuctionType = ''TaxSale'' AND NOT( ts.StartTime < GETDATE())', 'TaxAuthorityPrefix,AccountNumber,TaxSaleId,Version,Name,TaxAuthorityPrefix,OrderPrefix,BiddingStrategyId,SelectionStrategyId,Status,Type,StartDate,EndDate,PaymentWindowEnd,IsPublic,NtsSentOn,AutoUpdate,SalePaymentDate,IsRefreshing,IsOffline,Location,ResearchQueueId,DiscountedResearchQueueId,CertificateSettingsId,DiscountedResearchQueueCutoffDate,AuctionId,AuctionType,Version,PropertyId,Price,State,LegalDescription,PreserveLegalDescription,CreatedBy,CreatedOn,ModifiedBy,ModifiedOn,PrimaryOwnerId,TaxSaleId,TotalDelinquency,NoticeOfTaxSaleId,CertificateId,ResearchStatus,LinkToAccountNumber,LinkToPropertyType,LinkToTaxAuthorityPrefix,LinkToTaxSaleCode,LinkToTaxSaleName,IsRedeemed,PolicyId,AdjudicationDate,IsClosed,ClosingDate,HudDocumentId,AdjudicationSaleId,IsHeld,IsConfirmed,ConfirmedBy,ConfirmedOn,IsBiddingDone,StartingBidOverride,BidMessageSeqNum,DepositAmount,ClosingStatus,ClosingMessageSeqNum,IsPriceOverridden,StartingPrice,InvoicedOn,InvoicedAs,LotNumberIncrement,LotNumber', 34, 1, NULL, 0, NULL, 0, 1, '2016-08-09 18:56:46.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('34c92823-001a-4129-ba2e-81a7dd4f1a56', 'Public auctions with active exclusions', 'Auctions in a public-facing status with active exclusions', 0, N'
 select ''"'' + p.AccountNumber + ''"'',
 case when a.state = 1 then ''Public''
@@ -1170,26 +716,6 @@ inner join fin.financialtransactions ft on ft.financialtransactionid = payment.A
 where ft.createdon < s.starttime and disb.iscancelled = 0 and s.starttime > ''<START>'' and s.starttime < ''<END>''
 group by s.starttime, s.code, civicsource.dbo.getEmail(purchaser.username)
 order by civicsource.dbo.getEmail(purchaser.username), s.starttime desc', 'Amount,Sale Date,SaleCode,Purchaser Email', 8, 1, NULL, 0, NULL, 1, 1, '2016-08-17 15:32:28.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('c5bc99eb-7697-46fc-8f38-881705c548e4', 'Press Release Tax Sale Summary', 'Press Release Tax Sale Summary', 0, N'SELECT distinct ts.TaxAuthorityPrefix + '' '' + CAST(YEAR(GETDATE()) AS varchar(4)) + '' Tax Sale'', cnt.cnt as ''# Properties'', CAST(lowest.Price AS MONEY) as ''Lowest Delinquent Balance'', CAST(highest.Price AS MONEY) as ''Highest Delinquent Balance''
-  from 
-  [cvs].[Sales] ts
-  inner join 
-			(select count(*) cnt, TaxAuthorityPrefix
-				from cvs.auctions a 
-				inner join cvs.sales ts on ts.saleid = a.SaleId AND SaleType = ''Tax''
-				where a.State in (10,30,40) and DATENAME(yyyy,StartTime) = CAST(YEAR(GETDATE()) AS varchar(4))	
-					group by ts.TaxAuthorityPrefix) cnt on cnt.TaxAuthorityPrefix = ts.TaxAuthorityPrefix
-  inner join (select top 1 a2.price, ts2.TaxAuthorityPrefix
-				from cvs.Auctions a2
-				inner join cvs.Sales ts2 on ts2.SaleId = a2.SaleId AND SaleType = ''Tax''
-				where a2.State in (10,30,40) and DATENAME(yyyy,StartTime) = CAST(YEAR(GETDATE()) AS varchar(4))	
-				order by a2.price) lowest on lowest.TaxAuthorityPrefix = ts.TaxAuthorityPrefix  
-  inner join (select top 1 a2.Price, ts2.TaxAuthorityPrefix
-				from cvs.Auctions a2
-				inner join cvs.Sales ts2 on ts2.SaleId = a2.SaleId AND SaleType = ''Tax''
-				where a2.State in (10,30,40) and DATENAME(yyyy,StartTime) = CAST(YEAR(GETDATE()) AS varchar(4))	
-				order by a2.price desc) highest on highest.TaxAuthorityPrefix = ts.TaxAuthorityPrefix  
-  where DATENAME(yyyy,StartTime) = CAST(YEAR(GETDATE()) AS varchar(4))', 'Sale,Properties in Current Tax Sale,Lowest Total Delinquent Balance,Highest Total Delinquent Balance', 26, 1, NULL, 0, NULL, 0, 1, '2016-06-28 20:32:58.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('21db5b2b-0bad-4360-b84f-8a8e7c1cf8a0', 'Sale Distribution - Step 3', 'A list of auctions for which funds have been distributed', 0, N'select	case 
 			when s.StartTime is not null then convert(varchar(10), s.StartTime, 20) 
 			else ''Research'' 
@@ -1362,39 +888,6 @@ from	civicsource.acc.activity a
 		left join civicsource.acc.revenueschedule s
 			on s.revenuescheduleid = i.revenuescheduleid
 order by AuctionType, TaxAuthority, code', 'Code,Name,ChargedTo,Process,Event,Per,Revenue,ExpectedExpense', 25, 1, NULL, 0, NULL, 0, 0, '2016-08-18 15:54:38.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('7ede6a1e-3ec5-40a6-9a6c-9bd07edc69b4', 'Costs for current tax sale accounts', 'Account number and cost balance for properties that are in a current tax sale', 0, N'
-  select ''"'' + x.AccountNumber + ''"'', y.Year, ISNULL(''$'' + CONVERT(varchar(20), CONVERT(money,Sum(y.Total)),1), ''FEE MISSING'')
-  from 
-	  (select p.AccountNumber, p.Id, a.State, a.SaleId, p.PropertyType
-	  from [cvs].Properties p
-		inner join cvs.Auctions a
-			on a.PropertyId = p.Id where a.State = 10 and a.SaleId = ''<FILTER>''
-	  )x
-	 left outer join (select pt.PropertyId, pt.Status, tt.Category, pt.Total, pt.Year 
-					from cvs.PropertyTaxes pt
-						inner join cvs.TaxTypes tt
-					on pt.TaxTypeId = tt.TaxTypeId where pt.Status = 2 and tt.Category = 5)y
-	on y.PropertyId = x.Id
-	Group by AccountNumber,Year
-	Order by AccountNumber,Year
-  ', 'Account Number, Tax Year, Cost Total', 771, 1, N'SELECT TOP 1
-        LEFT(DATENAME(m, ts.StartTime), 3) + '' '' + DATENAME(yyyy, StartTime)
-        + '' Tax Sale'' AS Name ,
-        ts.SaleId
-FROM    cvs.Sales ts
-WHERE   SaleType = ''tax''
-ORDER BY EndTime DESC', 0, 'Tax Sale', 0, 0, '2016-08-23 21:55:31.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('705c4cd4-8887-416f-8127-9d298e3c0e16', 'Revenue & Expense for Terminal State Auctions', 'Revenue and expense by cost code for each auction in a terminal state, i.e., sold, not sold or canceled', 0, N'
-select	p.accountnumber, convert(varchar(10), s.StartTime, 20) [Date], case when a.state = 30 then ''Sold'' when a.state = 40 then ''Not Sold'' when a.state = 20 then ''Canceled'' end State ,/*a.invoicedon, a.invoicedas,*/ r.Code, r.Name, r.Cost, r.Expense		
-from	cvs.properties p		
-		inner join cvs.auctions a	
-			on a.propertyid = p.id
-		inner join cvs.sales s
-			on a.saleid = s.saleid AND SaleType = ''Adj''
-		inner join (select	auction, code, name, sum(revenue) Cost, sum(actualexpense) Expense from acc.Receivable group by auction, code, name) r
-			on r.auction = a.auctionid	
-where	a.state > 10		
-order by p.accountnumber, r.code', 'AccountNumber,Date,State,Code,Name,Cost,Expense', 15, 1, NULL, 0, NULL, 0, 1, '2016-04-27 19:05:22.000', NULL, NULL)
 EXEC(N'INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES (''f71bb10f-35c9-4855-b5a5-9d60b7a80d07'', ''Summary Report'', ''Summary of collections and calls'', 0, N''SELECT a.MonthTxt + ''''-'''' + CONVERT(varchar(4),a.Year) "Month/Year",   case when b.del is null then ''''No Data'''' else CONVERT(varchar(20),b.del) end "Delinquent Start of Month",   a.Number "Number Paid",   a.Principal "Taxes (including costs)",   a.Interest "Interest",   a.Penalty "Penalty",   a.Collection "Collection",   a.Total "Total",    a.av "Avg $/payment",    case when c.inbound is null then ''''No Data'''' else convert(varchar(20),c.inbound) end "inbound calls",    case when c.outbound is null then ''''No Data'''' else convert(varchar(20),c.outbound) end "outbound calls",    case when c.inboundvoice is null then ''''No Data'''' else convert(varchar(20),c.inboundvoice) end "Inbound Voicemail"  from  (  SELECT   YEAR(AppliedAt) Year,   DateName(month,AppliedAt) MonthTxt,  MONTH(AppliedAt) month,   count(*) Number,   ''''$'''' + CONVERT(varchar(20), CONVERT(money,SUM(Balance)),1) Principal,   ''''$'''' + CONVERT(varchar(20), CONVERT(money,SUM(Interest)),1) Interest,   ''''$'''' + CONVERT(varchar(20), CONVERT(money,SUM(PEnalty)),1) Penalty,  ''''$'''' + CONVERT(varchar(20), CONVERT(money,SUM(Collection)),1) Collection,   ''''$'''' + CONVERT(varchar(20), CONVERT(money,SUM(Total)),1) Total,  ''''$'''' + CONVERT(varchar(20), CONVERT(money,SUM(Total)/(count(*))),1) av      FROM [cvs].[PropertyPayments]    group by DateName(month,AppliedAt), Year(AppliedAt), MONTH(AppliedAt)    ) a    left outer join(  select pis.Unchanged + pis.Additions del, YEAR(start.dt) yr, datename(month,start.dt) monthtxt, MONTH(dt) month  from [rpt].[PropertyImportSnapshot] pis  inner join  (SELECT MIN(Date) dt          FROM [rpt].[PropertyImportSnapshot]       WHERE Type = 0         group by DateName(month,Date),YEAR(Date),MONTH(Date) ) start  on start.dt = pis.Date and pis.Type = 0    ) b  on b.yr = a.Year and b.month = a.Month  left outer join  (SELECT YEAR(CallDate) Year, DateName(month,CallDate) MonthTxt, Month(CallDate) month, ISNULL(inbound.cnt,0) inbound, ISNULL(outbound.cnt,0) outbound, ISNULL(inboundvoice.cnt, 0) inboundvoice, ISNULL(thirdparty.cnt, 0) thirdparty  FROM tel.Calls   full outer join  (SELECT YEAR(CallDate) [Year] ,MONTH(CallDate) [Month], CallType [Type], COUNT(*) cnt  FROM [tel].[Calls] WHERE CallType = 0 AND TalkTime > 0 GROUP BY YEAR(CallDate),MONTH(CallDate), CallType) inbound  on YEAR(CallDate) = inbound.Year and Month(CallDate) = inbound.Month   full outer join  (SELECT YEAR(CallDate) Year, MONTH(CallDate) Month, CallType type, COUNT(*) cnt  FROM [tel].[Calls] WHERE CallType = 1 AND TalkTime > 0 GROUP BY YEAR(CallDate),MONTH(CallDate), CallType) outbound  on YEAR(CallDate)= outbound.Year and MONTH(CallDate) = outbound.Month   full outer join  (SELECT YEAR(CallDate) Year, MONTH(CallDate) Month, CallType type, COUNT(*) cnt  FROM [tel].[Calls] WHERE CallType = 2 GROUP BY YEAR(CallDate),MONTH(CallDate), CallType) inboundvoice  on YEAR(CallDate)= inboundvoice.Year and MONTH(CallDate) = inboundvoice.Month   full outer join  (SELECT YEAR(CallDate) Year, MONTH(CallDate) Month, CallType type, COUNT(*) cnt  FROM [tel].[Calls] WHERE CallType = 3  AND TalkTime > 0 GROUP BY YEAR(CallDate),MONTH(CallDate), CallType) thirdparty   on YEAR(CallDate)= thirdparty.Year and MONTH(CallDate) = thirdparty.Month   where (Year(CallDate) > 2010) or (Year(CallDate) = 2010 and Month(CallDate) > 4)  GROUP BY YEAR(CallDate),MONTH(CallDate),DateName(month,CallDate),inbound.cnt,outbound.cnt,inboundvoice.cnt, thirdparty.cnt  )c  on c.Year = a.Year and c.Month = a.Month  order by a.Year desc, a.month desc'', ''Month/Year,Delinquent At Start of Month,Number Paid,Taxes (including costs),Interest,Penalty,Collection,Total,Avg $/payment,Inbound Calls,Outbound Calls,Inbound Voicemail'', 76, 1, NULL, 0, NULL, 0, 0, ''2016-06-29 20:18:18.000'', NULL, NULL)')
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('21733be7-60d1-4eef-aeb3-9efbffd8e115', 'Scrubbing Summary', 'All scrubbing statistics separated by agent.', 0, N'-- Scrubbing Summary
 declare @ScrubbingSummary table (
@@ -1541,32 +1034,6 @@ FROM    cvs.Sales ts
 WHERE   SaleType = ''Tax''
 AND GETDATE() > EndTime
 ORDER BY x.ed DESC', 0, 'Tax Sale', 0, 0, '2016-08-30 20:00:12.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('e0f72d79-3df9-4a82-b781-a88df0ca66db', 'Bankruptcy (Business) List', 'List of Business owners of properties (with active auctions) to send for bankruptcy check', 0, N'select ts.TaxAuthorityPrefix + p.accountnumber, 
-	'''', --CASE WHEN LEN(po.NameFirst) > 0 THEN po.namefirst ELSE '''' END,
-	'''', --CASE WHEN LEN(po.namelast) > 0 THEN po.namelast ELSE '''' END, 
-	CASE WHEN LEN(po.NameBusiness) > 0 THEN po.NameBusiness ELSE '''' END, 
-	CASE WHEN LEN(poa.Address1) > 0 THEN poa.Address1 ELSE '''' END, 
-	CASE WHEN LEN(poa.Address2) > 0 THEN poa.Address2 ELSE '''' END, 
-	CASE WHEN LEN(poa.City) > 0 THEN poa.City ELSE '''' END, 
-	poa.State,
-	poa.PostalCode,
-	poa.Country,
-	CASE WHEN LEN(p.Address1) > 0 THEN p.Address1 ELSE '''' END,
-	CASE WHEN LEN(p.Address2) > 0 THEN p.Address2 ELSE '''' END,
-	CASE WHEN LEN(p.City) > 0 THEN p.City ELSE '''' END,
-	p.State,
-	p.PostalCode,
-	p.Country
-	FROM [cvs].[Auctions] a
-  inner join cvs.Sales ts on ts.saleid = a.saleid AND SaleType = ''Tax''
-  inner join cvs.Properties p on p.id = a.propertyid
-  inner join cvs.propertyowners po on po.propertyownerid = a.PrimaryOwnerId
-  LEFT OUTER JOIN
-	(SELECT propertyownerid, Address1, Address2, City, State, PostalCode, Country,
-			ROW_NUMBER() OVER (PARTITION BY PropertyOwnerId ORDER BY Status ASC, AddressIndex DESC) rownum
-	 FROM cvs.PropertyOwnerAddresses) poa ON poa.propertyownerid = po.PropertyOwnerId AND poa.rownum = 1
-  where NameBusiness IS NOT NULL AND LEN(NameBusiness) > 0
-  and a.State in (10)', 'Tax Bill Number,Owner First,Owner Last,Owner Business,Owner Address 1,Owner Address 2,Owner City,Owner State,Owner Postal Code,Owner Country,Parcel Address 1,Parcel Address 2,Parcel City,Parcel State,Parcel Postal Code,Parcel Country', 67, 1, NULL, 0, NULL, 0, 0, '2016-08-10 15:40:32.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('1ebed16e-a06b-426b-b181-a9440f428689', 'Notorious bidders in latest Tax Sale', 'This export returns information on all bidders in the current/latest tax sale where their bidding average is below 50%.', 0, N'Declare @latestTaxSale 
 	uniqueidentifier = (select top 1 t.TaxSaleId 
 		from cvs.taxsales t   
@@ -1589,211 +1056,6 @@ Group by au.Name, au.Email,  au.BusinessAreaCode + au.BusinessPrefix + au.Busine
 Au.IsBanned, Au.IsBiddingDisabled
 Having ((sum(b.PercentValue)/(COUNT(au.Email))) * 100) < 50      
 Order by  Bids desc,  AveragePercentage asc', 'Email, Bids, Avg Percent, BidderPage, IsBanned, IsBiddingDisabled', 70, 1, NULL, 0, NULL, 0, 0, '2016-04-27 18:42:55.000', NULL, NULL)
-EXEC(N'INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES (''3e5c434c-f131-47bd-bd4e-aa687ae4bfb8'', ''Press release numbers'', ''Monthly press release numbers for Danos'', 0, N''DECLARE @results TABLE
-(
-	Label varchar(200),
-	Info varchar(500),
-	OrderIndex int
-)
-
-DECLARE @saleDate DATETIME
-SET @saleDate = (SELECT StartTime FROM cvs.Sales WHERE saleid = ''''<FILTER>'''' AND SaleType = ''''Adj'''')
-
-DECLARE @prevSaleDate DATETIME
-SET @prevSaleDate = (SELECT TOP 1 StartTime FROM cvs.Sales WHERE StartTime < @saleDate AND SaleType = ''''Adj'''' ORDER BY EndTime DESC)
-
-DECLARE @totalCanceled int
-SET @totalCanceled = (SELECT COUNT(*)
-	FROM cvs.auctions a
-	WHERE a.AuctionType = ''''Adjudication'''' AND a.State IN (20)
-	AND a.AuctionId IN (SELECT taxsalepropertyid 
-						FROM cvs.AuctionStateHistory ash 
-						WHERE ash.ToState = 1 AND ash.TaxSalePropertyId = a.AuctionId)
-	AND a.AuctionId IN (SELECT taxsalepropertyid
-						FROM cvs.AuctionStateHistory ash
-						where ash.tostate = 20 AND ash.taxsalepropertyid = a.AuctionId AND ash.CreatedOn > @prevSaleDate))
-
-DECLARE @redemptions TABLE
-(
-	total int,
-	value_del decimal(19,5)
-)
-
-insert into @redemptions
-SELECT COUNT(DISTINCT(p.id)), SUM(pp.tot)
-FROM cvs.auctions a
-INNER JOIN cvs.Properties p ON p.Id = a.PropertyId
-INNER JOIN (SELECT pt.propertyid, SUM(pt.total) AmountDue
-                   FROM cvs.PropertyTaxes pt
-				   WHERE pt.Year <> 2015
-				   GROUP BY pt.PropertyId) pt_2 ON pt_2.PropertyId = p.id
-inner JOIN (SELECT pp.AccountNumber, pp.PropertyType, SUM(pp.Total) tot
-			FROM cvs.PropertyPayments pp
-			WHERE source <> ''''TEMP''''
-			GROUP BY pp.AccountNumber, pp.PropertyType) pp ON pp.AccountNumber = p.AccountNumber AND pp.PropertyType = p.PropertyType
-WHERE a.AuctionType = ''''Adjudication'''' AND a.State IN (20) AND pt_2.amountdue = 0
-AND EXISTS (SELECT taxsalepropertyid 
-					FROM cvs.AuctionStateHistory ash 
-					WHERE ash.ToState = 1 AND ash.TaxSalePropertyId = a.AuctionId)
-AND EXISTS (SELECT taxsalepropertyid
-					FROM cvs.AuctionStateHistory ash
-					where ash.tostate = 20 AND ash.taxsalepropertyid = a.AuctionId AND ash.CreatedOn > @prevSaleDate)						
-										
-
-DECLARE @topAuctions TABLE
-(
-	label VARCHAR(500),
-	amount nvarchar(12)
-)
-INSERT INTO @topAuctions
-        ( label, amount )
-SELECT * FROM (SELECT TOP 1 p.Address1 + '''' ('''' + p.AccountNumber + '''')'''' hp, CAST(b.amount AS NVARCHAR(12)) hs
-FROM cvs.Auctions a 
-INNER JOIN cvs.Properties p ON p.Id = a.PropertyId
-INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
-INNER JOIN PRODAUCTION.auction.dbo.auction a2 ON a2.id = a.AuctionId
-INNER JOIN PRODAUCTION.auction.dbo.bid b ON b.id = a2.winningbidid
-WHERE a.state = 30 AND sale.SaleId = ''''<FILTER>''''
-ORDER BY b.amount DESC) m
-
-insert into @results
--- Label
-SELECT ''''Selected Sale: '''', CAST(@saleDate AS nvarchar(30)), 1 
-insert into @results
--- Previous Sale
-SELECT ''''Previous Sale: '''', CAST(@prevSaleDate AS nvarchar(30)), 2
-insert into @results
--- Sale count
-SELECT ''''#Properties in Sale: '''', CAST(COUNT(*) as nvarchar(12)) AS saleCount, 3
-FROM cvs.auctions a
-INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
-WHERE a.State in (10,30,40) AND sale.saleid = ''''<FILTER>''''
-insert into @results
--- Vacant Count
-SELECT ''''#Possible vacant lots in Sale: '''', CAST(COUNT(DISTINCT a.AuctionId) as nvarchar(12)) AS ''''Vacant'''', 4
-FROM cvs.auctions a 
-INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
-WHERE  a.AuctionType = ''''Adjudication''''
-AND a.State in (10,30,40) AND sale.saleid = ''''<FILTER>''''
-AND a.PropertyId IN (SELECT ass.PropertyId FROM 
-						cvs.Assessments ass
-						INNER JOIN cvs.AssessmentTypes asst ON asst.AssessmentTypeId = ass.AssessmentTypeId
-						WHERE ass.PropertyId = a.PropertyId AND ass.IsDeleted = 0 AND asst.Name = ''''Improvement'''' AND ass.Amount = 0)
-AND a.PropertyId IN (SELECT ass.PropertyId FROM 
-						cvs.Assessments ass
-						INNER JOIN cvs.AssessmentTypes asst ON asst.AssessmentTypeId = ass.AssessmentTypeId
-						WHERE ass.PropertyId = a.PropertyId AND ass.IsDeleted = 0 AND asst.Name = ''''Land'''' AND ass.Amount > 0)
-insert into @results
--- Letters COUNT
-SELECT ''''Mail notifications sent: '''', cast(COUNT(*) as nvarchar(12)) as ''''Mail Sent'''', 5
-FROM ma'', ''Press Release Numbers'', 101, 1, N''SELECT
-CONVERT(VARCHAR(100), StartTime, 106) + '''' Sale'''',
-SaleId
-FROM cvs.Sales
-WHERE EndTime < GETDATE()
-AND SaleType = ''''Adj''''
-ORDER BY StartTime desc'', 0, ''Adjudication Sale'', 0, 0, ''2016-05-04 13:27:58.000'', NULL, NULL)')
-EXEC(N'UPDATE [dbo].[DataExports] SET [Query].WRITE(N''il.Campaigns c
-INNER JOIN mail.letters l  on l.campaignid = c.CampaignId
-INNER JOIN cvs.Auctions a ON a.AuctionId = l.PrimaryDataId
-INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
-WHERE CampaignType = ''''EditableAuctionBasedNas'''' AND sale.saleid = ''''<FILTER>''''						
-insert into @results
--- Average delinquency
-SELECT ''''Average tax delinquency: '''', cast(AVG(del.tot) as nvarchar(12)) as ''''Avg tax'''', 6
-FROM cvs.auctions a 
-INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
-INNER JOIN cvs.Properties p ON p.Id = a.PropertyId
-LEFT OUTER JOIN (SELECT pt.PropertyId, SUM(pt.Total) tot
-				FROM cvs.PropertyTaxes pt
-				INNER JOIN cvs.TaxTypes tt ON tt.TaxTypeId = pt.TaxTypeId
-				WHERE pt.Status = 2 AND tt.TaxCode <> ''''67''''
-				GROUP BY pt.PropertyId) del ON del.PropertyId = p.Id
-WHERE sale.saleid = ''''<FILTER>''''
-insert into @results
--- Average years delinquent
-SELECT ''''Average years delinquent'''', CAST(AVG(main.years_delinquent) AS NVARCHAR(12)) AS ''''Avg years'''', 7
-FROM(
-	SELECT p.AccountNumber, YEAR(GETDATE()) - MIN(pt.Year) years_delinquent
-	FROM cvs.auctions a 
-	INNER JOIN cvs.Properties p ON p.Id = a.PropertyId
-	INNER JOIN cvs.PropertyTaxes pt ON pt.PropertyId = p.Id
-	INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
-	WHERE a.AuctionType = ''''Adjudication'''' AND pt.Status = 2 AND sale.saleid = ''''<FILTER>''''
-	AND a.AuctionId IN (SELECT taxsalepropertyid 
-					FROM cvs.AuctionStateHistory ash 
-					WHERE ash.ToState = 1 AND ash.TaxSalePropertyId = a.AuctionId)
-	GROUP BY p.AccountNumber
-) main
-insert into @results
--- Average assessement
-SELECT ''''Average assessment: ''''	, cast(AVG(main.amt) as nvarchar(12)) as ''''Avg assessment'''', 8
- FROM
-(
-	SELECT SUM(ass.Amount) amt
-	FROM cvs.auctions a 
-	INNER JOIN cvs.Properties p ON p.Id = a.PropertyId
-	INNER JOIN cvs.Assessments ass ON ass.PropertyId = p.Id
-	INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
-	WHERE a.AuctionType = ''''Adjudication''''  AND ass.IsDeleted = 0
-	AND a.State in (10,30,40) AND sale.saleid = ''''<FILTER>''''
-	GROUP BY p.Id
-) main
-insert into @results
--- Number sold
-SELECT ''''Number sold'''', CAST(COUNT(*) AS NVARCHAR(12)) AS ''''# Sold'''', 9
-FROM cvs.Auctions a 
-INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
-WHERE a.state = 30 AND sale.SaleId = ''''<FILTER>''''
-insert into @results
--- Value of winning bids
-SELECT ''''Winning bids total'''', CAST(SUM(b.amount) AS nvarchar(12)) AS ''''Total bids'''', 10
-FROM cvs.Auctions a 
-INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
-INNER JOIN PRODAUCTION.auction.dbo.auction a2 ON a2.id = a.AuctionId
-INNER JOIN PRODAUCTION.auction.dbo.bid b ON b.id = a2.winningbidid
-WHERE a.state = 30 AND sale.SaleId = ''''<FILTER>''''
-insert into @results
--- Number not sold
-SELECT ''''Number not sold'''', CAST(COUNT(*) AS NVARCHAR(12)) AS ''''# Not Sold'''', 11
-FROM cvs.Auctions a 
-INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
-WHERE a.state = 40 AND sale.SaleId = ''''<FILTER>''''
-insert into @results
--- Highest seller
-SELECT TOP 1 ''''Highest selling property address'''' , label, 12 FROM @topAuctions
-insert into @results
-SELECT TOP 1 ''''Highest selling property amount'''', amount, 13 FROM @topAuctions
-insert into @results
--- Cancelled since prior sale
-SELECT ''''Canceled (non-redemption) since '''' +  CAST(@prevSaleDate AS nvarchar(30)), CAST((select @totalCanceled - (select top 1 total from @redemptions)) AS NVARCHAR(15)), 14
-insert into @results
--- Redeemed since prior sale
-SELECT ''''#Redeemed since '''' +  CAST(@prevSaleDate AS nvarchar(30)), CAST((select top 1 total from @redemptions) AS NVARCHAR(15)), 15
-insert into @results
--- $Value to City of redemptions since prior sale
-SELECT ''''$Redeemed since '''' +  CAST(@prevSaleDate AS nvarchar(30)), CAST((select top 1 value_del from @redemptions) AS NVARCHAR(15)), 16
-insert into @results
--- Deposits since prior sale
-SELECT ''''#Deposits since '''' +  CAST(@prevSaleDate AS nvarchar(30)), CAST(COUNT(DISTINCT a.AuctionId) as nvarchar(15)),16
-FROM cvs.auctions a 
-I'',NULL,NULL) WHERE [Id] = ''3e5c434c-f131-47bd-bd4e-aa687ae4bfb8''
-UPDATE [dbo].[DataExports] SET [Query].WRITE(N''NNER JOIN cvs.AuctionStateHistory ash ON ash.TaxSalePropertyId = a.AuctionId
-WHERE a.AuctionType = ''''Adjudication'''' AND ash.ToState = 2 AND CAST(ash.CreatedOn AS DATE) > @prevSaleDate
-insert into @results
--- LA deposits sinct prior sale
-SELECT ''''#LA Deposits since '''' +  CAST(@prevSaleDate AS nvarchar(30)), CAST(COUNT(DISTINCT a.AuctionId) as nvarchar(15)),17
-FROM cvs.auctions a 
-INNER JOIN cvs.AuctionStateHistory ash ON ash.TaxSalePropertyId = a.AuctionId
-WHERE a.AuctionType = ''''Adjudication'''' AND ash.ToState = 2 AND CAST(ash.CreatedOn AS DATE) > @prevSaleDate
-AND a.AuctionId IN (SELECT ar.AuctionId
-					FROM cvs.Deposits ar
-					INNER JOIN cvs.Purchasers pu ON pu.PurchaserId = ar.PurchaserId
-					INNER JOIN CivicSource.dbo.AuctioneerProfiles ap ON ap.Username = pu.Username
-					WHERE ar.AuctionId = a.AuctionId AND ar.Status <> 3 AND ap.State = ''''LA'''')
-
-SELECT Label,Info from @results order by OrderIndex'',NULL,NULL) WHERE [Id] = ''3e5c434c-f131-47bd-bd4e-aa687ae4bfb8''
-')
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('920dc56d-d096-4c97-a115-b26808f1263a', 'Refunds applied to purchase (overage)', 'Users where too manydeposit payments were applied to purchases', 0, N'select sum(purchase.purchaseprice), sum(disb.amt), sum(disb.amt - purchase.purchaseprice), civicsource.dbo.getEmail(purchaser.username), s.starttime
 from cvs.auctions a
 inner join cvs.sales s on s.saleid = a.saleid
@@ -1898,32 +1160,6 @@ and p.accountnumber not in (select accountnumber from cvs.propertyexclusions
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('7469a841-8508-4f23-a66d-be457986114a', 'Call counts', 'Sum of inbound and outbound calls in current year to date', 0, N'SELECT ''Calls'', count(*)
   FROM [tel].[Calls]
   where year(calldate) = 2016 and calltype in (0,1)', 'Count', 1, 1, NULL, 0, NULL, 0, 1, '2016-06-30 15:03:21.000', '1', NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('af2c4bb5-a2e6-47c5-8e05-bfa3c37a5860', 'Bankruptcy (Person) List', 'List of person owners of properties (with active auctions) to send for bankruptcy check', 0, N'select ts.TaxAuthorityPrefix + p.accountnumber, 
-	CASE WHEN LEN(po.NameFirst) > 0 THEN po.namefirst ELSE '''' END,
-	CASE WHEN LEN(po.namelast) > 0 THEN po.namelast ELSE '''' END, 
-	'''', --CASE WHEN LEN(po.NameBusiness) > 0 THEN po.NameBusiness ELSE '''' END, 
-	CASE WHEN LEN(poa.Address1) > 0 THEN poa.Address1 ELSE '''' END, 
-	CASE WHEN LEN(poa.Address2) > 0 THEN poa.Address2 ELSE '''' END, 
-	CASE WHEN LEN(poa.City) > 0 THEN poa.City ELSE '''' END, 
-	poa.State,
-	poa.PostalCode,
-	poa.Country,
-	CASE WHEN LEN(p.Address1) > 0 THEN p.Address1 ELSE '''' END,
-	CASE WHEN LEN(p.Address2) > 0 THEN p.Address2 ELSE '''' END,
-	CASE WHEN LEN(p.City) > 0 THEN p.City ELSE '''' END,
-	p.State,
-	p.PostalCode,
-	p.Country
-	FROM [cvs].[Auctions] a
-  inner join cvs.Sales ts on ts.saleid = a.saleid AND SaleType = ''Tax''
-  inner join cvs.Properties p on p.id = a.propertyid
-  inner join cvs.propertyowners po on po.propertyownerid = a.PrimaryOwnerId
-  LEFT OUTER JOIN
-	(SELECT propertyownerid, Address1, Address2, City, State, PostalCode, Country,
-			ROW_NUMBER() OVER (PARTITION BY PropertyOwnerId ORDER BY Status ASC, AddressIndex DESC) rownum
-	 FROM cvs.PropertyOwnerAddresses) poa ON poa.propertyownerid = po.PropertyOwnerId AND poa.rownum = 1
-  where NameLast IS NOT NULL AND LEN(NameLast) > 0
-  and a.State in (10)', 'Tax Bill Number,Owner First,Owner Last,Owner Business,Owner Address 1,Owner Address 2,Owner City,Owner State,Owner Postal Code,Owner Country,Parcel Address 1,Parcel Address 2,Parcel City,Parcel State,Parcel Postal Code,Parcel Country', 68, 1, NULL, 0, NULL, 0, 0, '2016-06-21 18:19:57.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('e0d7a673-282e-47f9-9678-c1939acb34ad', 'Public auctions with occupancy report status', 'Report showing account numbers and if there is an occupancy report for that account', 0, N'
 SELECT ''"'' + P.AccountNumber + ''"''
 ,Case
@@ -1939,28 +1175,6 @@ SELECT ''"'' + P.AccountNumber + ''"''
   Join cvs.Properties P on P.ID = A.PropertyID
   Where A.State = 1
   ', 'AccountNumber,Occupancy Report', 9, 1, NULL, 0, NULL, 0, 1, '2016-07-11 17:21:57.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('7a260099-833c-4521-a317-c2a514ad2a2e', 'Mobile Home Report', 'Properties that contain an improvement without land', 0, N'Select 
-   ''"'' + accountnumber + ''"'', 
-   REPLACE(REPLACE(REPLACE(P.legaldescription,char(10),'' ''),char(13),'' ''),''  '','' ''),
-   Case
-      When IsMobileHome = 1 Then ''Yes''
-	  When IsMobileHome = 0 Then ''No''
-   End,
-   LEFT(DATENAME( m, StartTime),3) +'' ''+ DATENAME(yyyy,StartTime) + '' Tax Sale'' AS Name
-From cvs.Properties P
-Left Join cvs.Auctions A on A.PropertyID = P.ID and A.State = 10
-Left Join cvs.Sales TS on TS.SaleID = A.SaleID AND SaleType = ''Tax''
-Where IsMobileHome = 1 or (P.Status = 2 and 
-(P.legaldescription like ''%IMP ON%'') or
-(P.legaldescription like ''%IMPROVEMENT ON%'') or
-(P.legaldescription like ''%MOBILE HOME ON%'') or
-(P.legaldescription like ''%TRAILER ON%'') or
-(P.legaldescription like ''%LOCATED ON LAND%'') or 
-(P.legaldescription like ''%ON LAND OF%'') or
-(P.legaldescription like ''%ON LAND ASSESSED TO%'') or
-(P.legaldescription like ''%ON THE PROPERTY OF%'') or
-(P.legaldescription like ''%MOBILE @%'')
-)', 'Account Number,Legal Description,Mobile Home Flag,Tax Sale', 95, 1, NULL, 0, NULL, 0, 0, '2016-08-17 14:24:34.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('b1f36589-db93-4bc4-91ad-c44a43939b72', 'Adjudication Adjoining Land Owner Report', 'Multi-TA query of Adjoining Land Owners', 0, N'
 SELECT Distinct
    ''"'' + P.AccountNumber + ''"'',
@@ -1992,59 +1206,6 @@ INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query
   where l.CampaignId = ''<FILTER>'' 
   group by l.ReturnReason, c.Name 
   order by ReturnReason', 'Campaign Name, Count, Return Reason', 27, 1, N'SELECT Name, CampaignID from mail.Campaigns order by CreatedOn desc', 0, 'Campaign', 0, 0, '2016-06-21 13:27:35.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('6e1a8233-c2f8-45dc-aba6-c4fc84ea6098', 'Properties Excluded From Tax Sale', 'List of all properties canceled from the current tax sale due to an exclusion', 0, N'
-/* Auction States */
-Declare @Auction_Candidate         Int = 0
-Declare @Auction_Public            Int = 1
-Declare @Auction_Researching       Int = 2
-Declare @Auction_Research_Complete Int = 3
-Declare @Auction_For_Sale          Int = 10
-Declare @Auction_Requires_Review   Int = 15
-Declare @Auction_Canceled          Int = 20
-Declare @Auction_Sold              Int = 30
-Declare @Auction_Not_Sold          Int = 40
-
-SELECT 
-   ''"'' + PE.AccountNumber + ''"'',
-   PE.Type,
-   PE.Source, 
-   PE.CreatedBy,
-   Convert(VarChar(10),PE.ExpiresOn,101),
-   LEFT(DATENAME( m, StartTime),3) +'' ''+ DATENAME(yyyy,StartTime) + '' Tax Sale'' AS Name
-  FROM [cvs].[Auctions] A
-  Join cvs.Sales TS on TS.SaleId = A.SaleID AND SaleType = ''Tax''
-  Join cvs.Properties P on P.Id = A.PropertyID
-  Join cvs.PropertyExclusions PE on PE.PropertyType = P.PropertyType and PE.AccountNumber = P.AccountNumber
-  Where (TS.IsRefreshing = 1 OR GETDATE() < TS.EndTime) and
-        A.State = @Auction_Canceled and
-		PE.ExpiresOn >= A.CreatedOn  
-  ', 'Account Number,Exclusion Type,Exclusion Source,Created By,Expires On,Tax Sale', 33, 1, NULL, 0, NULL, 0, 0, '2016-08-22 18:39:02.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('ad714e70-b5e9-4de0-bb9b-c652b0b787b2', 'Auctions without calls', 'Current auctions where no calls have been made', 0, N'DECLARE @currentTaxSaleID AS uniqueidentifier    select TOP 1 @currentTaxSaleID = ts.SaleId from cvs.Sales ts where SaleType = ''tax'' ORDER BY EndTime desc      
-IF (@currentTaxSaleID is not null)    BEGIN     
-DECLARE @db VARCHAR(50)
-SELECT  @db = CASE WHEN SUBSTRING(DB_NAME(), 0,
-                                  CHARINDEX(''_'', DB_NAME(),
-                                            CHARINDEX(''_'', DB_NAME(), 0) + 1)) = ''''
-                   THEN ''CivicSource''
-                   ELSE SUBSTRING(DB_NAME(), 0,
-                                  CHARINDEX(''_'', DB_NAME(),
-                                            CHARINDEX(''_'', DB_NAME(), 0) + 1))
-              END
-DECLARE @sql NVARCHAR(500)
-SET @sql = ''SELECT @TAPrefix = ta.Prefix FROM '' + @db + ''.dbo.TaxAuthorities ta WHERE ''''''
-    + @db + ''_'''' + ta.SafeName = DB_NAME()''
-DECLARE @TaxAuthorityPrefix VARCHAR(3)
-EXEC sp_executesql @sql, N''@TAPrefix VARCHAR(3) OUTPUT'', @TAPrefix = @TaxAuthorityPrefix OUTPUT
-SELECT    @TaxAuthorityPrefix AS TaxAuthorityPrefix,    p.AccountNumber,  
---CASE po.NamePrefix when null then '''' ELSE po.NamePrefix END + CASE po.NameFirst when null then '''' ELSE '' '' + po.NameFirst END + CASE po.NameMiddle when null then '''' ELSE '' '' + po.NameMiddle END + CASE po.NameLast when null then '''' ELSE '' '' + po.NameLast END + CASE po.NameSuffix when null then '''' ELSE '' '' + po.NameSuffix END,
---CASE po.SpousePrefix when null then '''' ELSE po.SpousePrefix END + CASE po.SpouseFirst when null then '''' ELSE '' '' + po.SpouseFirst END + CASE po.SpouseMiddle when null then '''' ELSE '' '' + po.SpouseMiddle END + CASE po.SpouseLast when null then '''' ELSE '' '' + po.SpouseLast END + CASE po.SpouseSuffix when null then '''' ELSE '' '' + po.SpouseSuffix END,
---CASE po.CareOfPrefix when null then '''' ELSE po.CareOfPrefix END + CASE po.CareOfFirst when null then '''' ELSE '' '' + po.CareOfFirst END + CASE po.CareOfMiddle when null then '''' ELSE '' '' + po.CareOfMiddle END + CASE po.CareOfLast when null then '''' ELSE '' '' + po.CareOfLast END + CASE po.CareOfSuffix when null then '''' ELSE '' '' + po.CareOfSuffix END,
---po.Business,REPLACE(po.UnparsedNameAndAddress, char(13) + char(10),'' ''),
-dbo.GetPropertyOwnerName(po.PropertyOwnerId),
-poa.City,    poa.[State],    poa.PostalCode,    poa.Country     from    cvs.Auctions a     left join cvs.Properties p on a.PropertyId = p.Id     
- left join cvs.PropertyOwners po on po.PropertyId = p.Id     left join cvs.Sales ts on ts.SaleId = a.SaleId AND SaleType = ''Tax''
- left join cvs.PropertyOwnerAddresses poa on poa.PropertyOwnerId = po.PropertyOwnerId and poa.Source = 2  where    a.[State] = 0    
- and    (select COUNT(*) from tel.Calls c where c.AccountNumber = p.AccountNumber) = 0    END    ELSE      select ''No Results'' as [Return]', 'Tax Authority,Account Number,Owner Names,City, State, Postal Code, Country', 152, 1, NULL, 0, NULL, 0, 0, '2016-04-27 18:33:13.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('1e78e7ea-259a-4cbf-a825-cac53b8f593b', 'Adjudicated Deposit Monthly Counts', 'Number of adjudicated property auction deposits by month.', 0, N'select	datepart(yy, r.depositmadeon), datepart(mm, r.depositmadeon), count(*)
 From cvs.Auctions a 
 inner join cvs.Properties p on a.PropertyId = p.Id 
@@ -2654,27 +1815,6 @@ Order by ImportType,[Days Since Last Import] Desc, Delq_Cnt, CUL.Name
   '',NULL,NUL'
 +N'L) WHERE [Id] = ''ef9353c6-1b5b-4822-b315-d3c92f8066c6''
 ')
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('ae9cbbef-0bc2-4b73-8491-d6a187e4c1f2', 'Adjudication Sale Results', 'Results of past adjudication sales', 0, N'
-SELECT ''"'' + p.AccountNumber + ''"'',
-a.LotNumber,
-CONVERT(VARCHAR(100), StartTime, 106) + '' Sale'',
-CONVERT(VarChar(10),StartTime,101),
-p.Address1 + CASE WHEN p.Address2 IS NOT NULL THEN '' '' + p.Address2 ELSE '''' END,
-a.startingprice,
-a.Price,
-pmp.NameOnDeed,
-ap.FirstName + '' '' + ap.LastName,
- ap.Email,
-''('' + ap.AreaCode + '') '' + ap.Prefix + ''-'' + ap.Suffix
-FROM cvs.Properties p
-INNER JOIN cvs.auctions a ON a.PropertyId = p.Id
-INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''Adj''
-INNER JOIN cvs.PrimaryMarketPurchases pmp ON pmp.AuctionId = a.AuctionId
-INNER JOIN cvs.Purchases pur ON pur.PurchaseId = pmp.PurchaseId and pur.status = 0
-INNER JOIN cvs.Purchasers puser ON puser .PurchaserId = pur.Purchaser
-INNER JOIN civicsource.dbo.auctioneerprofiles ap ON ap.username = puser.username
-WHERE a.state = 30 AND Sale.EndTime < GETDATE()
-', 'Tax Bill Number,Auction ID,Adjudication Sale,Sale Date,Address,Starting Price,Price,Winner Name on Deed,Winner,Winner Email,Winner Telephone', 24, 1, NULL, 0, NULL, 0, 1, '2016-08-22 21:03:35.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('763a969e-a05a-4ea8-acd6-d7ada4074585', 'Resolutions', 'Summary of Resolutions by Month', 0, N'select 
 case start.Type WHEN 0 THEN ''Immovable'' WHEN 1 THEN ''Movable'' END typ, 
 start.yr yr, start.mn_text mn,
@@ -2747,18 +1887,6 @@ LEFT join cvs.Sales s ON s.SaleId = a.SaleId
 inner join (select	row_number() over(Partition by AuctionId order by TriggeredOn desc) Num, HoldHistoryId, AuctionId, Reason, Username, TriggeredOn from cvs.HoldHistory WHERE IsHolding = 1) h on h.AuctionId = a.AuctionId and h.Num = 1 
 where a.AuctionType = ''Adjudication''
 ', 'Account Number, Address, Sale Date, Current Status, No-Go date, No-Go''d by, Reason', 2, 1, NULL, 0, NULL, 0, 1, '2016-08-04 17:08:11.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('73f944e9-147c-4980-a22a-dc37e464907b', 'Revenue & Expense Detail with Dates', 'Each revenue and expense line item, not grouped or summarized, for each auction in a terminal state, i.e., sold, not sold or canceled', 0, N'select	p.accountnumber, convert(varchar(10), s.StartTime, 20) [Date], case when a.state = 30 then ''Sold'' when a.state = 40 then ''Not Sold'' when a.state = 20 then ''Canceled'' end State ,/*a.invoicedon, a.invoicedas,*/ r.Code, r.Name, r.Revenue [Cost], convert(varchar(10), r.CreatedOn, 20) [CostDate], r.ActualExpense [Expense], convert(varchar(10), e.CreatedOn, 20) [ExpenseDate]
-from	cvs.properties p		
-		inner join cvs.auctions a	
-			on a.propertyid = p.id
-		inner join cvs.sales s
-			on a.saleid = s.saleid AND SaleType = ''Adj''
-		inner join acc.Receivable r
-			on r.auction = a.auctionid
-		left join acc.expense e
-			on e.receivable = r.receivableid
-where	a.state > 10		
-order by p.accountnumber, r.code', 'Account Number,Date,State,Code,Name,Cost,Cost Date,Expense Date', 20, 1, NULL, 0, NULL, 0, 1, '2016-05-05 00:34:01.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('4c03d4dd-9cc1-4c7b-bbe1-dd97f902b9d8', 'Adjudicated Holds', '', 0, N'
 Select	
    ''"'' + P.AccountNumber + ''"'', 
@@ -2967,23 +2095,6 @@ CASE WHEN p.IsBankrupt = 1 THEN ''True'' ELSE ''False'' END ''IsBankrupt'' ,
 p.AmountDue  FROM [cvs].[Properties] p  inner join cvs.PropertyOwners po   on po.PropertyId = p.Id     
 inner join cvs.PropertyOwnerAddresses poa  on poa.PropertyOwnerId = po.PropertyOwnerId     
 and poa.AddressIndex = 0  WHERE p.AmountDue > 0 and p.PropertyType = 1 order by p.AccountNumber', 'Account Number, Address, Legal, Owner Name, Owner Address, Status, Bankrupt, Amount Due', 96, 1, NULL, 0, NULL, 0, 0, '2016-08-12 20:48:21.000', NULL, NULL)
-INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('bcdd4ea0-50be-4f8f-b5c4-f29787f5ee14', 'Tax Sale Fees', 'Displays both percent and itemized fees associated with a tax sale', 0, N'SELECT	SUM(case WHEN tt.Category NOT IN (5,6) THEN pt.Balance ELSE 0 END) [Tax],
-		SUM(pt.Interest) [Int],
-		SUM(pt.Penalty) [Pen],
-		SUM(pt.Collection) [9.5% Fee],
-		SUM(case WHEN tt.Category IN (5,6) THEN pt.Balance ELSE 0 END) [Itemized Fee]
-FROM	cvs.Auctions a
-		INNER JOIN cvs.SellableTaxes pt
-			ON pt.TaxSalePropertyId = a.AuctionId
-		INNER JOIN cvs.TaxTypes tt
-			ON tt.TaxTypeId = pt.TaxTypeId
-WHERE	a.State = 10 AND a.SaleId = ''<FILTER>''', 'Tax, Interest, Penalty, 9.5% Fee, Itemized Fee', 15, 1, N'SELECT TOP 1
-        LEFT(DATENAME(m, ts.StartTime), 3) + '' '' + DATENAME(yyyy, StartTime)
-        + '' Tax Sale'' AS Name ,
-        ts.SaleId
-FROM    cvs.Sales ts
-WHERE   SaleType = ''tax''
-ORDER BY EndTime DESC', 0, 'Tax Sale', 0, 0, '2016-06-24 16:27:24.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('c66e9dd5-b997-4ca5-8404-f567df349c5f', 'Tax Sale Property - Verification', 'Properties that remained in a tax sale after payment was accepted by the TA', 0, N'SELECT 
    ''"'' + P.AccountNumber + ''"'',
    Case
@@ -3012,6 +2123,895 @@ from	cvs.Auctions a
 			on p.id = a.propertyid
 where	d.cancelledby is null and a.state < 20
 order by	p.accountnumber', 'Account Number, Made On, Price', 35, 1, NULL, 0, NULL, 0, 1, '2016-08-29 14:21:01.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('84f82378-a4b8-4cb6-b97d-06a83d376895', 'Sold Adjudication Auctions', 'Sale Date and Closing Date for all sold adjudication auctions', 0, N'
+  SELECT 
+   ''"'' + p.accountnumber + ''"'',
+   P.Address1,
+   CONVERT(VarChar(10),sale.EndTime,101),
+   Convert(VarChar(10),a.ClosingDate,101),
+   Cast(A.Price as Money),
+   Cast(A.StartingPrice as Money)
+FROM cvs.Properties p
+INNER JOIN cvs.auctions a ON a.PropertyId = p.Id
+INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''Adj''
+WHERE a.state = 30 AND a.AuctionType = ''adjudication''
+ORDER BY sale.EndTime, p.AccountNumber
+', 'Account Number,Address,Sale Date,Closing Date,Winning Bid,Starting Price', 57, 1, N'', 0, '', 0, 1, '2016-08-28 21:27:30.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('6bed0863-b195-4f1b-853d-15c57c972f77', 'Adjudication Sale Results for Jonah', 'Adjudication Sale Results for Jonah', 0, N'SELECT p.AccountNumber ''Tax Bill Number'',			
+p.Address1 + CASE WHEN p.Address2 IS NOT NULL THEN '' '' + p.Address2 ELSE '''' END ''Address'',			
+a2.currentPrice ''Price'', 					
+res.name ''Abstract queue'', 			
+res.username ''Abstractor''			
+FROM cvs.Properties p			
+INNER JOIN cvs.auctions a ON a.PropertyId = p.Id			
+INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId	AND SaleType = ''Adj''	
+INNER JOIN PRODAUCTION.auction.dbo.auction a2 ON a2.id = a.AuctionId			
+INNER JOIN CivicSource.dbo.TaxAuthorities ta ON ''civicsource_'' + ta.SafeName = DB_NAME()
+LEFT JOIN (SELECT r.propertyid, q.name, agent.username, acc.accountnumber, acc.groupname FROM 			
+			PRODRESEARCH.research.res.researches r
+			INNER JOIN PRODRESEARCH.research.res.accounts acc ON acc.propertyid = r.propertyid
+			INNER JOIN PRODRESEARCH.research.res.queues q ON q.id = r.queueid AND (q.name LIKE ''%abstract%'' OR q.name LIKE ''%legacy%'')
+			INNER JOIN PRODRESEARCH.research.res.agents agent ON agent.id = r.assigneeid) res ON res.accountnumber = p.AccountNumber AND res.groupname = ta.Prefix
+WHERE a.state = 30 AND a.SaleId = ''<FILTER>''				
+', 'Tax Bill Number,Address,Price,Abstract Queue,Abstractor', 136, 1, N'SELECT
+CONVERT(VARCHAR(100), StartTime, 106) + '' Sale'',
+SaleId
+FROM cvs.Sales
+WHERE EndTime < GETDATE()
+AND SaleType = ''Adj''
+ORDER BY StartTime desc', 0, 'Adjudication Sale', 0, 0, '2016-08-04 17:00:56.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('a84c5d1d-0970-45e4-8d87-2605b9c2d3aa', 'CNO Payment File Summary', '**Works only for CNO** Sums owner payments by month and year for invoicing', 0, N'SELECT	DATEPART(m, appliedat) [Month], datepart(yy, appliedat) [Year], 
+		SUM(case when tt.TaxCode IN (''66'', ''51'', ''67'') then interest + penalty else balance + interest + penalty end) Tax, 
+		sum(case when tt.TaxCode  = ''51'' then balance else 0 end) [TC51],  
+		sum(case when tt.TaxCode  = ''66'' then balance else 0 end) [TC66], 
+		sum(case when tt.TaxCode  = ''67'' then balance else 0 end) [TC67],   
+		sum([collection]) [Collection Fee], sum(total) Total
+from  cvs.propertypayments pp
+INNER JOIN cvs.TaxTypes tt ON tt.TaxTypeId = pp.TaxTypeId
+left OUTER JOIN cvs.propertypaymenttypes ppt ON ppt.propertypaymenttypeid = pp.propertypaymenttypeid
+WHERE ppt.TransactionCode IS NULL OR ppt.TransactionCode NOT IN (''090'')
+group by datepart(yy, appliedat), datepart(m, appliedat)
+order by [Year], [Month]', 'Month,Year,Tax,TC51,TC66,TC67,Collection Fee,Total', 110, 1, NULL, 0, NULL, 0, 0, '2016-05-31 19:24:39.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('afed8a41-eda3-4a4f-b9aa-36c239e939eb', 'CNO 2015 Immovable Properties - Call Lists', 'CNO April 2015 tax sale immovable properties that have an amount due greater than zero with owner contact information', 0, N'with Accounts (accountnumber) AS (
+	select accountnumber from (
+	select	p.accountnumber, p.id, p.amountdue
+	from	cvs.properties p
+	where	p.status = 2 and p.isadjudicated = 0 and p.taxclass != 3 and
+			p.propertytype = 0 and accountnumber not in (
+				select accountnumber from cvs.propertyexclusions where propertytype = 0 and (expireson is null or expireson > getdate())) and
+			p.isbankrupt = 0 and p.id not in (
+				select propertyid from cvs.propertytaxes pt inner join cvs.taxtypes tt on pt.taxtypeid = tt.taxtypeid where pt.total > 0 and tt.category = 1) and
+			(p.id in (
+				select	propertyid
+				from	cvs.propertytaxes pt
+						inner join cvs.taxtypes tt
+							on tt.taxtypeid = pt.taxtypeid
+				where	tt.category in (0,3) and pt.year between 2014 and 2014 and pt.total > 0
+				group by propertyid
+				having sum(total) >= 100) or
+			(p.id in (
+				select	propertyid
+				from	cvs.propertytaxes pt
+						inner join cvs.taxtypes tt
+							on tt.taxtypeid = pt.taxtypeid
+				where	tt.category in (0,3) and pt.year between 2012 and 2014 and pt.total > 0
+				group by propertyid
+				having sum(total) >= 100) and 
+			p.id not in (
+				select propertyid
+				from	cvs.auctions
+				where	saleid = ''937FED1E-C413-45F5-8DB3-A2F90108B55C'' and state = 10))) 
+				) a
+)
+
+SELECT '' '' + p.AccountNumber + '' '',
+dbo.GetPropertyOwnerName(p.PropertyOwnerId) ''Owner Name'',
+CASE WHEN poa.Address1 is null or LEN(poa.Address1) = 0 then '''' else poa.Address1 + '', '' end
++ CASE WHEN poa.Address2 is null or LEN(poa.Address2) = 0 then '''' else poa.Address2 + '', '' end
++ CASE WHEN poa.City is null or LEN(poa.City) = 0 then '''' else poa.City + '', '' end
++ CASE WHEN poa.State is null or LEN(poa.State ) = 0 then '''' else poa.State + '' '' end
++ CASE WHEN poa.PostalCode is null or LEN(poa.PostalCode) = 0 then '' '' else poa.PostalCode + '', '' end
++ CASE WHEN poa.Country is null or LEN(poa.Country ) = 0 then '' '' else poa.Country end ''Owner Address'',
+coll.Balance ''Balance'',
+CASE WHEN coll.PropertyId is null then ''No'' else ''Yes'' END ''Collection Fee''
+  FROM [cvs].[Properties] p
+  inner join Accounts on Accounts.accountnumber = p.AccountNumber
+  inner join cvs.PropertyOwners po on po.PropertyOwnerId = p.PropertyOwnerId
+  inner join cvs.PropertyOwnerAddresses poa on poa.PropertyOwnerId = po.PropertyOwnerId and poa.AddressIndex = 0
+  left outer join (
+select pt.PropertyId, SUM(pt.Balance) ''Balance'' from cvs.PropertyTaxes pt
+inner join cvs.TaxTypes tt on tt.TaxTypeId = pt.TaxTypeId
+where tt.Category = 5 or pt.Collection > 0
+group by pt.PropertyId ) coll on coll.PropertyId = p.Id
+
+  order by p.AccountNumber', 'Account Number, Owner Name, Owner Address, Balance, Collection Fee', 26, 1, NULL, 0, NULL, 0, 0, '2016-04-27 18:36:49.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('f793cb7f-0a21-47b9-bfe2-4601864cbcd9', 'CNO Payment File Summary (with payment types)', '**Works only for CNO** Sums owner payments by month, year, and payment type (On time, late with interest, etc.)', 0, N'SELECT	DATEPART(m, appliedat) [Month], datepart(yy, appliedat) [Year], 
+	SUM(CASE WHEN ppt.transactioncode = ''090'' THEN pp.Total ELSE 0 END) [090 Temporary credit],
+	SUM(CASE WHEN ppt.transactioncode = ''100'' THEN pp.Total ELSE 0 END) [100 Timely payment],
+	SUM(CASE WHEN ppt.transactioncode = ''110'' THEN pp.Total ELSE 0 END) [110 Late payment with interest],
+	SUM(CASE WHEN ppt.transactioncode = ''160'' THEN pp.Total ELSE 0 END) [160 Tax sale],
+	SUM(CASE WHEN ppt.transactioncode = ''170'' THEN pp.Total ELSE 0 END) [170 Redemption Payment],
+	SUM(CASE WHEN ppt.transactioncode IS null THEN pp.Total ELSE 0 END) [NULL Unknown]
+from  cvs.propertypayments pp
+left OUTER JOIN cvs.propertypaymenttypes ppt ON ppt.propertypaymenttypeid = pp.propertypaymenttypeid
+group by datepart(yy, appliedat), datepart(m, appliedat)
+order by [Year], [Month]', 'Year,090 Temporary credit,100 Timely payment,110 Late payment with interest,160 Tax sale,170 Redemption Payment,NULL Unknown', 9, 1, NULL, 0, NULL, 0, 0, '2016-05-22 01:53:22.000', NULL, NULL)
+EXEC(N'INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES (''a18ed863-b074-47ad-84d8-46351249aaf9'', ''Verify Encoded Fees and Cost'', ''Report showing encodings to date for a selected tax sale'', 0, N''Declare @ltFeesandCost Table
+(
+PropertyID UniqueIdentifier,
+AccountNumber VarChar(500),
+IsAdjudicated VarChar(3),
+IsExcluded VarChar(3),
+IsBankrupt VarChar(3),
+IsMobileHome VarChar(3),
+TaxSale VarChar(500),
+TaxSaleState VarChar(25),
+PropertyType VarChar(25),
+ProType Int,
+TaxYear Int,
+TaxesDue Money,
+Interest Money,
+ArchonFee Money,
+CurrentCost Money,
+CurrentDate DateTime
+)
+ 
+Insert Into @ltFeesandCost 
+ Select
+    P.ID, 
+    ''''"'''' + p.AccountNumber + ''''"'''', 
+	Case
+	   When p.IsAdjudicated = 1 Then ''''Yes''''
+	   Else ''''No''''
+	End,
+	Null,
+	Case
+	   When p.IsBankrupt = 1 Then ''''Yes''''
+	   Else ''''No''''
+    End,
+	Case
+	   When p.IsMobileHome = 1 Then ''''Yes''''
+	   Else ''''No ''''
+	End,
+	Null,
+	Null,
+	Case
+      When P.PropertyType = 0 Then ''''Real Estate''''
+      When P.PropertyType = 1 Then ''''Personal Property''''
+    End,
+	P.PropertyType,
+	PT.Year,
+	Null,
+	Null,
+	Null,
+	Null,
+	Null
+From cvs.Properties P
+Join cvs.PropertyTaxes PT On PT.PropertyId = P.Id
+Where PT.Status != 0
+Group by P.ID, P.AccountNumber,P.PropertyType,PT.Year, P.IsAdjudicated, P.IsBankrupt, P.IsMobileHome
+
+Update @ltFeesAndCost
+Set TaxesDue = 0,
+    Interest = 0,
+    ArchonFee = 0,
+    CurrentCost = 0
+
+Update FC
+   Set TaxSale = IsNull((Select Top 1 Upper(Left(DateName(MM,TS.StartTime),3)) + '''' '''' + DateName(YYYY,TS.StartTime) + '''' '''' + Upper(TS.SaleType) + '''' SALE ('''' + TS.Code + '''')''''
+                     From cvs.Sales As TS
+                     Join cvs.Auctions As A On A.SaleID = TS.SaleId
+                     Where GetDate() <= TS.EndTime and A.PropertyID = FC.PropertyID and
+                     A.State In (10,20,30,40) and A.PropertyID = FC.PropertyID),''''No'''')
+From @ltFeesAndCost as FC
+
+Update FC
+   Set TaxSaleState = IsNull((Select Top 1 
+                     Case
+					    When A.State = 10 Then ''''For Sale''''
+						When A.State = 20 Then ''''Canceled''''
+						When A.State = 40 Then ''''Not Sold''''
+						When A.State = 20 Then ''''Sold''''
+						Else ''''Unknown''''
+					 End
+                     From cvs.Sales As TS
+                     Join cvs.Auctions As A On A.SaleID = TS.SaleId
+                     Where GetDate() <= TS.EndTime and A.PropertyID = FC.PropertyID and
+                     A.State In (10,20,30,40) and A.PropertyID = FC.PropertyID),'''''''')
+From @ltFeesAndCost as FC
+
+Update FC
+   Set IsExcluded = IsNull((Select Top 1 ''''Yes''''
+                       From cvs.PropertyExclusions as PE
+                       Where PE.AccountNumber = FC.AccountNumber and 
+                       PE.PropertyType = FC.ProType and 
+                       PE.ExpiresOn >= GetDate()
+                       Order By PE.ExpiresOn),''''No'''')
+From @ltFeesAndCost as FC
+
+Update FC
+   Set TaxesDue = (Select IsNull(Sum(Balance), 0.00)
+                   From cvs.PropertyTaxes PT
+                   Join cvs.TaxTypes as TT On TT.TaxTypeID = PT.TaxTypeID
+                   Where PT.PropertyID = FC.PropertyID and
+                         PT.Year = FC.TaxYear and
+                         TT.Category In (0,2,3))
+From @ltFeesAndCost as FC
+
+Update FC
+   Set Interest = (Select IsNull(Sum(Interest), 0.00)
+                   From cvs.PropertyTaxes PT
+                   Join cvs.TaxTypes as TT On TT.TaxTypeID = PT.TaxTypeID
+                   Where PT.PropertyID = FC.PropertyID and
+                         PT.Year = FC.TaxYear) + FC.Interest
+From @ltFeesAndCost as FC
+
+Update FC
+   Set Interest = (Select IsNull(Sum(Balance), 0.00)
+                   From cvs.PropertyTaxes PT
+                   Join cvs.TaxTypes as TT On TT.TaxTypeID = PT.TaxTypeID
+                   Where PT.PropertyID = FC.PropertyID and
+                         TT.Category = 7 and
+                         PT.Year = FC.TaxYear) + FC.Interest
+From @ltFeesAndCost as FC
+
+Update FC
+   Set ArchonFee = (Select IsNull(Sum(Collection),0.00)
+                   From cvs.PropertyTaxes PT
+                   Join cvs.TaxTypes as TT On TT.TaxTypeID = PT.TaxTypeID
+                   Where PT.PropertyID = FC.PropertyID and
+                '', ''Account Number,Is Adjudicated,Is Excluded,Is Bankrupt,Is MobileHome,Tax Sale,Tax Sale State,Property Type,Tax Year,Taxes Due,Interest,Archon 10% Fee,Encoding to date,Last Encoded'', 47, 1, NULL, 0, NULL, 0, 0, ''2016-08-30 19:04:27.000'', NULL, NULL)')
+UPDATE [dbo].[DataExports] SET [Query].WRITE(N'         PT.Year = FC.TaxYear) + FC.ArchonFee
+From @ltFeesAndCost as FC
+
+Update FC
+   Set ArchonFee = (Select IsNull(Sum(Balance),0.00)
+                   From cvs.PropertyTaxes PT
+                   Join cvs.TaxTypes as TT On TT.TaxTypeID = PT.TaxTypeID
+                   Where PT.PropertyID = FC.PropertyID and
+                         PT.Year = FC.TaxYear and
+                         TT.Category = 6) + FC.ArchonFee
+From @ltFeesAndCost as FC
+
+Update FC
+   Set CurrentCost = IsNull((Select Sum(PT.Balance)
+                     From cvs.PropertyTaxes PT
+                     Join cvs.TaxTypes as TT On TT.TaxTypeID = PT.TaxTypeID
+                     Where PT.PropertyID = FC.PropertyID and
+                     PT.Year = FC.TaxYear and TT.Category = 5),0.00)
+From @ltFeesAndCost as FC
+
+Update FC
+   Set CurrentDate = (Select Top 1 PTV.ChangeDate
+                     From cvs.PropertyTaxVersions PTV
+                     Join cvs.PropertyTaxes as PT On PT.ID = PTV.TaxID
+                     Join cvs.TaxTypes as TT On TT.TaxTypeID = PT.TaxTypeID
+                     Where PT.PropertyID = FC.PropertyID and
+                     PT.Year = FC.TaxYear and
+                     TT.Category = 5
+                     Order By PTV.ChangeDate Desc)
+From @ltFeesAndCost as FC
+	
+
+Select
+   AccountNumber,
+   IsAdjudicated,
+   IsExcluded,
+   IsBankrupt,
+   IsMobileHome,
+   TaxSale,
+   TaxSaleState,
+   PropertyType,
+   TaxYear,
+   TaxesDue,
+   Interest,
+   ArchonFee,
+   CurrentCost,
+   CONVERT(VarChar(10),CurrentDate,101)
+From @ltFeesandCost',NULL,NULL) WHERE [Id] = 'a18ed863-b074-47ad-84d8-46351249aaf9'
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('abec9002-b1c2-4d80-b270-4a6151229ac8', 'Tax Sale Count with total due', 'Multi-TA query of tax sale with property counts and total due', 0, N'SELECT 
+			   LEFT(DATENAME( m, StartTime),3) +'' ''+ DATENAME(yyyy,StartTime) + '' Tax Sale'' AS Name,
+			   Count(P.AccountNumber),
+			   IsNull(Cast(Sum(A.Price) As Money),0.00) [Amount Due]
+			FROM [cvs].[Properties] P
+			Join cvs.Auctions A On A.PropertyID = P.ID
+			Join cvs.sales TS On TS.SaleId = A.SaleId AND SaleType = ''Tax''
+			Where A.State = 10 and A.AuctionType = ''TaxSale''  
+			Group By LEFT(DATENAME( m, StartTime),3) +'' ''+ DATENAME(yyyy,StartTime) + '' Tax Sale'' ', 'Tax Sale,For Sale Count,Total Due', 11, 1, NULL, 0, NULL, 0, 1, '2016-06-29 14:21:55.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('06045590-90a0-4eb3-898d-5b03c56bbb48', 'Change Orders By Tax Sale', 'Change orders details filtered by tax sale', 0, N'select p.AccountNumber, 
+ p.Address1 [Address], 
+ case a.[State]
+ when 0 then ''Not For Sale''
+ when 10 then ''For Sale''
+ when 20 then ''Canceled''
+ when 30 then ''Sold''
+ when 40 then ''Not Sold''
+ end AuctionStatus,
+ case pco.[Status]
+ when 0 then ''Pending''
+ when 1 then ''Approved''
+ when 2 then ''Rejected''
+ end [Status], 
+ pco.SubmittedOn, 
+ pco.TaxYear,
+ Replace(Replace(pco.ChangeReason,Char(13),''''),Char(10),'''') ChangeReason
+ from cvs.Auctions a 
+ join cvs.Properties p 
+ on a.PropertyId = p.Id 
+ join cvs.PropertyChangeOrders pco 
+ on pco.PropertyId = p.Id 
+ where a.SaleId = ''<FILTER>''
+ order by p.AccountNumber, pco.TaxYear', 'Account Number, Property Address, Auction Status, Status, Submitted On, Tax Year, Change Reason', 113, 1, N'SELECT  LEFT(DATENAME(m, StartTime), 3) + '' '' + DATENAME(yyyy, StartTime)
+        + '' Tax Sale'' AS Name ,
+        ts.SaleId
+FROM    cvs.Sales ts
+        INNER JOIN ( SELECT MAX(EndTime) ed ,
+                            SaleId
+                     FROM   cvs.Sales
+                     WHERE  SaleType = ''Tax''
+                     GROUP BY SaleId
+                   ) x ON x.SaleId = ts.SaleId
+WHERE   SaleType = ''Tax''
+ORDER BY x.ed DESC', 0, 'Tax Sale', 0, 0, '2016-08-30 13:49:04.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('9bff5381-7479-491c-89f0-62df8d817a79', 'Scheduled Adjudication Sales', 'Multi-TA query of properties scheduled for adj sales', 0, N'      
+SELECT ''"'' + p.AccountNumber + ''"'',
+p.Address1 + CASE WHEN p.address2 IS NOT NULL AND LEN(p.Address2) > 0 THEN '' '' + p.Address2 ELSE '''' END ''Address'',
+a.Price ''Current Price'',
+CAST(sale.StartTime AS DATE) ''Sale Date'',
+d.Name ''Depositor Name'',
+d.NameOnDeed ''Depositor Name on Deed'',
+d.phone ''Depositor Phone'',
+d.DepositMadeOn ''Deposit Made On'',
+CONVERT(VarChar(10),Sale.LockedOn,101),
+Case
+      When (SELECT Count(Da.AttributeValue) 
+	           FROM [doc].[Documents] d
+               Join doc.DocumentAttributes da On da.DocumentId = d.DocumentId and Da.AttributeName = ''Account Number''
+               where d.DocumentTypeId = (Select DocumentTypeID 
+			                                From doc.DocumentTypes DT 
+											Where DT.Name = ''Occupancy Report'')  and Da.AttributeValue = P.AccountNumber) > 0 Then ''Yes''
+	  Else ''No''
+End,
+Case
+      When (SELECT Count(Da.AttributeValue) 
+	           FROM [doc].[Documents] d
+               Join doc.DocumentAttributes da On da.DocumentId = d.DocumentId and Da.AttributeName = ''Account Number''
+               where d.DocumentTypeId = (Select DocumentTypeID 
+			                                From doc.DocumentTypes DT 
+											Where DT.Name = ''Constructive Notice Signs'')  and Da.AttributeValue = P.AccountNumber) > 0 Then ''Yes''
+	  Else ''No''
+End
+FROM cvs.Properties p
+INNER JOIN cvs.auctions a ON a.PropertyId = p.Id
+INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''Adj''
+left join (select d.auctionid, ap.FirstName + '' '' + ap.LastName as name, ap.NameOnDeed, ''(''+ ap.AreaCode+ '') '' + ap.Prefix + ''-'' + ap.Suffix as phone, d.DepositMadeOn
+			from cvs.deposits d
+			inner join cvs.Purchasers pu on d.PurchaserId = pu.PurchaserId
+			inner join CivicSource.dbo.AuctioneerProfiles ap on ap.username = pu.username
+			where d.status <> 2 ) d on d.auctionid = a.auctionid
+
+WHERE a.State = 10
+ORDER BY sale.StartTime, p.AccountNumber', 'Tax Bill Number,Address,Current Price,Sale Date,Depositor Name,Depositor Name On Deed,Depositor Phone,Deposit Made On,Lock Date,Occupancy Report,Constructive Notice Sign', 132, 1, NULL, 0, NULL, 0, 1, '2016-08-29 16:14:52.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('6bedcc1d-74da-4da2-a9ed-631210c5fca1', 'Combined skiptracing report', 'Research and forwarding skiptrace report', 0, N'declare @datestart as date
+set @datestart = CAST(''<START>'' as DATE) 
+
+select ForwardingAddressModifiedBy, 0, 0, count(*) fwdAddr, cast(@datestart as varchar(10))
+from mail.Letters l
+where ForwardingAddressModifiedBy is not null
+and cast(ForwardingAddressModifiedOn as date) >= @datestart and cast(ForwardingAddressModifiedOn as date) < DATEADD(day,7,@datestart)
+group by ForwardingAddressModifiedBy', 'AGENT,RESEARCH ACCOUNT #,RESEARCH ADDRESSES #,FORWARDING ADDRESSES #,WEEK STARTING', 4, 1, NULL, 0, NULL, 1, 1, '2016-06-15 16:47:09.000', '1,5', N'declare @datestart as date
+set @datestart = CAST(''<START>'' as DATE) 
+
+select addresses.createdby, 
+properties.cntprop,
+addresses.cntaddr,
+0,
+cast(@datestart as varchar(10))
+from (select createdby, count(*) cntaddr
+	from prodresearch.research.res.recipients
+	where cast(createdon as date) >= @datestart and cast(createdon as date) < DATEADD(day,7,@datestart)
+	group by createdby) addresses
+inner join (select createdby, count(distinct(propertyid)) cntprop
+	from prodresearch.research.res.recipients
+	where cast(createdon as date) >= @datestart and cast(createdon as date) < DATEADD(day,7,@datestart)
+	group by createdby) properties on properties.createdby = addresses.createdby')
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('7311418b-c70c-4ce9-8428-649620027aa7', 'Unsold Taxes', 'Unsold taxes at tax sale for each bill number', 0, N'SELECT p.AccountNumber, st.Year, typ.TaxCode,
+''$'' + CONVERT(varchar(20), CONVERT(money,st.Balance),1),  ''$'' + CONVERT(varchar(20), CONVERT(money,st.Interest),1),  ''$'' + CONVERT(varchar(20), CONVERT(money,st.Penalty),1),  ''$'' + CONVERT(varchar(20), CONVERT(money,st.Collection),1)
+FROM [cvs].[SellableTaxes] st
+inner join cvs.Auctions a on a.AuctionId = st.TaxSalePropertyId
+inner join cvs.Sales ts on ts.SaleId = a.SaleId AND SaleType = ''Tax''
+inner join cvs.Properties p on p.Id = a.PropertyId
+inner join cvs.TaxTypes typ on typ.TaxTypeId = st.TaxTypeId
+where a.State = 40 and ts.SaleId = ''<FILTER>''
+order by p.AccountNumber, st.Year, typ.TaxCode	', 'Acount Number, Year, Tax Code, Tax, Interest, Penalty, Collection', 26, 1, N'SELECT  LEFT(DATENAME(m, StartTime), 3) + '' '' + DATENAME(yyyy, StartTime)
+        + '' Tax Sale'' AS Name ,
+        ts.SaleId
+FROM    cvs.Sales ts
+        INNER JOIN ( SELECT MAX(EndTime) ed ,
+                            SaleId
+                     FROM   cvs.Sales
+                     WHERE  SaleType = ''Tax''
+                     GROUP BY SaleId
+                   ) x ON x.SaleId = ts.SaleId
+WHERE   SaleType = ''Tax''
+AND GETDATE() > EndTime
+ORDER BY x.ed DESC', 0, 'Tax Sale', 0, 0, '2016-08-30 19:03:48.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('a0e41f82-78a2-4194-a143-6da8c2c461f4', 'Adjudication Sale Properties Results', 'Results of past adjudication sales for Brian / Walter', 0, N'
+SELECT p.AccountNumber,
+p.Address1 + CASE WHEN p.Address2 IS NOT NULL THEN '' '' + p.Address2 ELSE '''' END,
+a.startingprice,
+a.Price,
+pmp.NameOnDeed,
+ap.FirstName + '' '' + ap.LastName,
+ ap.Email,
+''('' + ap.AreaCode + '') '' + ap.Prefix + ''-'' + ap.Suffix
+FROM cvs.Properties p
+INNER JOIN cvs.auctions a ON a.PropertyId = p.Id
+INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''Adj''
+INNER JOIN cvs.PrimaryMarketPurchases pmp ON pmp.AuctionId = a.AuctionId
+INNER JOIN cvs.Purchases pur ON pur.PurchaseId = pmp.PurchaseId and pur.status = 0
+INNER JOIN cvs.Purchasers puser ON puser .PurchaserId = pur.Purchaser
+INNER JOIN civicsource.dbo.auctioneerprofiles ap ON ap.username = puser.username
+WHERE a.state = 30 AND a.SaleId = ''<FILTER>''
+  ', 'Tax Bill Number,Address,Starting Price,Price,Winner Name on Deed,Winner,Winner Email,Winner Telephone', 135, 1, N'SELECT
+CONVERT(VARCHAR(100), StartTime, 106) + '' Sale'',
+SaleId
+FROM cvs.Sales
+WHERE EndTime < GETDATE()
+AND SaleType = ''Adj''
+ORDER BY StartTime desc', 0, 'Adjudication Sale', 0, 0, '2016-08-09 16:27:02.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('a292fd6d-3e51-4a8c-850d-704316f33e42', 'Properties in Tax Sale', 'All uncanceled properties in a tax sale', 0, N'
+SELECT distinct LEFT(DATENAME( m, StartTime),3) +'' ''+ DATENAME(yyyy,StartTime) + '' Tax Sale'' AS Name  , ''"'' + p.AccountNumber + ''"''   ,p.Address1 + CASE p.Address2 WHEN null then '' '' ELSE '' '' + p.Address2 END ''Address''  ,p.LegalDescription   ,dbo.GetPropertyOwnerName(o.PropertyOwnerId)  , CASE WHEN poa.Address1 is null or LEN(poa.Address1) = 0 then '''' else poa.Address1 + '', '' end   + CASE WHEN poa.Address2 is null or LEN(poa.Address2) = 0 then '''' else poa.Address2 + '', '' end   + CASE WHEN poa.City is null or LEN(poa.City) = 0  then '''' else poa.City + '', '' end   + CASE WHEN poa.State  is null or LEN(poa.State ) = 0  then '''' else poa.State + '' '' end   + CASE  WHEN poa.PostalCode is null or LEN(poa.PostalCode) = 0  then '''' else poa.PostalCode + '', '' end  + CASE WHEN poa.Country is null or LEN(poa.Country ) = 0  then '''' else poa.Country end  ''Owner Address''   , p.AmountDue         FROM cvs.Auctions a INNER JOIN cvs.Sales ts on a.SaleId = ts.SaleId AND SaleType = ''Tax'' INNER JOIN cvs.Properties p on a.PropertyId = p.Id  INNER JOIN cvs.PropertyOwners o on p.PropertyOwnerId = o.PropertyOwnerId  INNER JOIN cvs.PropertyOwnerAddresses poa on o.PropertyOwnerId = poa.PropertyOwnerId    WHERE ts.SaleId = ''<FILTER>''   AND a.State !=20  AND poa.Source = 2
+', 'Tax Sale, AccountNumber, Address, Legal, Owner Name, Owner Address, Amount Due', 1094, 1, N'SELECT  LEFT(DATENAME(m, StartTime), 3) + '' '' + DATENAME(yyyy, StartTime)
+        + '' Tax Sale'' AS Name ,
+        ts.SaleId
+FROM    cvs.Sales ts
+        INNER JOIN ( SELECT MAX(EndTime) ed ,
+                            SaleId
+                     FROM   cvs.Sales
+                     WHERE  SaleType = ''Tax''
+                     GROUP BY SaleId
+                   ) x ON x.SaleId = ts.SaleId
+WHERE   SaleType = ''Tax''
+ORDER BY x.ed DESC', 0, 'Tax Sale', 0, 0, '2016-08-23 22:05:57.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('2bb82391-6011-4bb8-bf24-7b2981dcadce', 'Auctions For Sale (All TAs)', 'TA Prefix and Account Number for all for sale auctions.', 0, N'SELECT ts.TaxAuthorityPrefix, p.AccountNumber, ts.*, a.* 
+FROM cvs.properties p inner join cvs.auctions a on a.propertyid = p.id inner join cvs.sales ts on ts.saleid = a.saleid AND SaleType = ''Tax'' where a.state = 10 
+AND a.AuctionType = ''TaxSale'' AND NOT( ts.StartTime < GETDATE())', 'TaxAuthorityPrefix,AccountNumber,TaxSaleId,Version,Name,TaxAuthorityPrefix,OrderPrefix,BiddingStrategyId,SelectionStrategyId,Status,Type,StartDate,EndDate,PaymentWindowEnd,IsPublic,NtsSentOn,AutoUpdate,SalePaymentDate,IsRefreshing,IsOffline,Location,ResearchQueueId,DiscountedResearchQueueId,CertificateSettingsId,DiscountedResearchQueueCutoffDate,AuctionId,AuctionType,Version,PropertyId,Price,State,LegalDescription,PreserveLegalDescription,CreatedBy,CreatedOn,ModifiedBy,ModifiedOn,PrimaryOwnerId,TaxSaleId,TotalDelinquency,NoticeOfTaxSaleId,CertificateId,ResearchStatus,LinkToAccountNumber,LinkToPropertyType,LinkToTaxAuthorityPrefix,LinkToTaxSaleCode,LinkToTaxSaleName,IsRedeemed,PolicyId,AdjudicationDate,IsClosed,ClosingDate,HudDocumentId,AdjudicationSaleId,IsHeld,IsConfirmed,ConfirmedBy,ConfirmedOn,IsBiddingDone,StartingBidOverride,BidMessageSeqNum,DepositAmount,ClosingStatus,ClosingMessageSeqNum,IsPriceOverridden,StartingPrice,InvoicedOn,InvoicedAs,LotNumberIncrement,LotNumber', 34, 1, NULL, 0, NULL, 0, 1, '2016-08-09 18:56:46.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('c5bc99eb-7697-46fc-8f38-881705c548e4', 'Press Release Tax Sale Summary', 'Press Release Tax Sale Summary', 0, N'SELECT distinct ts.TaxAuthorityPrefix + '' '' + CAST(YEAR(GETDATE()) AS varchar(4)) + '' Tax Sale'', cnt.cnt as ''# Properties'', CAST(lowest.Price AS MONEY) as ''Lowest Delinquent Balance'', CAST(highest.Price AS MONEY) as ''Highest Delinquent Balance''
+  from 
+  [cvs].[Sales] ts
+  inner join 
+			(select count(*) cnt, TaxAuthorityPrefix
+				from cvs.auctions a 
+				inner join cvs.sales ts on ts.saleid = a.SaleId AND SaleType = ''Tax''
+				where a.State in (10,30,40) and DATENAME(yyyy,StartTime) = CAST(YEAR(GETDATE()) AS varchar(4))	
+					group by ts.TaxAuthorityPrefix) cnt on cnt.TaxAuthorityPrefix = ts.TaxAuthorityPrefix
+  inner join (select top 1 a2.price, ts2.TaxAuthorityPrefix
+				from cvs.Auctions a2
+				inner join cvs.Sales ts2 on ts2.SaleId = a2.SaleId AND SaleType = ''Tax''
+				where a2.State in (10,30,40) and DATENAME(yyyy,StartTime) = CAST(YEAR(GETDATE()) AS varchar(4))	
+				order by a2.price) lowest on lowest.TaxAuthorityPrefix = ts.TaxAuthorityPrefix  
+  inner join (select top 1 a2.Price, ts2.TaxAuthorityPrefix
+				from cvs.Auctions a2
+				inner join cvs.Sales ts2 on ts2.SaleId = a2.SaleId AND SaleType = ''Tax''
+				where a2.State in (10,30,40) and DATENAME(yyyy,StartTime) = CAST(YEAR(GETDATE()) AS varchar(4))	
+				order by a2.price desc) highest on highest.TaxAuthorityPrefix = ts.TaxAuthorityPrefix  
+  where DATENAME(yyyy,StartTime) = CAST(YEAR(GETDATE()) AS varchar(4))', 'Sale,Properties in Current Tax Sale,Lowest Total Delinquent Balance,Highest Total Delinquent Balance', 26, 1, NULL, 0, NULL, 0, 1, '2016-06-28 20:32:58.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('7ede6a1e-3ec5-40a6-9a6c-9bd07edc69b4', 'Costs for current tax sale accounts', 'Account number and cost balance for properties that are in a current tax sale', 0, N'
+  select ''"'' + x.AccountNumber + ''"'', y.Year, ISNULL(''$'' + CONVERT(varchar(20), CONVERT(money,Sum(y.Total)),1), ''FEE MISSING'')
+  from 
+	  (select p.AccountNumber, p.Id, a.State, a.SaleId, p.PropertyType
+	  from [cvs].Properties p
+		inner join cvs.Auctions a
+			on a.PropertyId = p.Id where a.State = 10 and a.SaleId = ''<FILTER>''
+	  )x
+	 left outer join (select pt.PropertyId, pt.Status, tt.Category, pt.Total, pt.Year 
+					from cvs.PropertyTaxes pt
+						inner join cvs.TaxTypes tt
+					on pt.TaxTypeId = tt.TaxTypeId where pt.Status = 2 and tt.Category = 5)y
+	on y.PropertyId = x.Id
+	Group by AccountNumber,Year
+	Order by AccountNumber,Year
+  ', 'Account Number, Tax Year, Cost Total', 771, 1, N'SELECT TOP 1
+        LEFT(DATENAME(m, ts.StartTime), 3) + '' '' + DATENAME(yyyy, StartTime)
+        + '' Tax Sale'' AS Name ,
+        ts.SaleId
+FROM    cvs.Sales ts
+WHERE   SaleType = ''tax''
+ORDER BY EndTime DESC', 0, 'Tax Sale', 0, 0, '2016-08-23 21:55:31.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('705c4cd4-8887-416f-8127-9d298e3c0e16', 'Revenue & Expense for Terminal State Auctions', 'Revenue and expense by cost code for each auction in a terminal state, i.e., sold, not sold or canceled', 0, N'
+select	p.accountnumber, convert(varchar(10), s.StartTime, 20) [Date], case when a.state = 30 then ''Sold'' when a.state = 40 then ''Not Sold'' when a.state = 20 then ''Canceled'' end State ,/*a.invoicedon, a.invoicedas,*/ r.Code, r.Name, r.Cost, r.Expense		
+from	cvs.properties p		
+		inner join cvs.auctions a	
+			on a.propertyid = p.id
+		inner join cvs.sales s
+			on a.saleid = s.saleid AND SaleType = ''Adj''
+		inner join (select	auction, code, name, sum(revenue) Cost, sum(actualexpense) Expense from acc.Receivable group by auction, code, name) r
+			on r.auction = a.auctionid	
+where	a.state > 10		
+order by p.accountnumber, r.code', 'AccountNumber,Date,State,Code,Name,Cost,Expense', 15, 1, NULL, 0, NULL, 0, 1, '2016-04-27 19:05:22.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('e0f72d79-3df9-4a82-b781-a88df0ca66db', 'Bankruptcy (Business) List', 'List of Business owners of properties (with active auctions) to send for bankruptcy check', 0, N'select ts.TaxAuthorityPrefix + p.accountnumber, 
+	'''', --CASE WHEN LEN(po.NameFirst) > 0 THEN po.namefirst ELSE '''' END,
+	'''', --CASE WHEN LEN(po.namelast) > 0 THEN po.namelast ELSE '''' END, 
+	CASE WHEN LEN(po.NameBusiness) > 0 THEN po.NameBusiness ELSE '''' END, 
+	CASE WHEN LEN(poa.Address1) > 0 THEN poa.Address1 ELSE '''' END, 
+	CASE WHEN LEN(poa.Address2) > 0 THEN poa.Address2 ELSE '''' END, 
+	CASE WHEN LEN(poa.City) > 0 THEN poa.City ELSE '''' END, 
+	poa.State,
+	poa.PostalCode,
+	poa.Country,
+	CASE WHEN LEN(p.Address1) > 0 THEN p.Address1 ELSE '''' END,
+	CASE WHEN LEN(p.Address2) > 0 THEN p.Address2 ELSE '''' END,
+	CASE WHEN LEN(p.City) > 0 THEN p.City ELSE '''' END,
+	p.State,
+	p.PostalCode,
+	p.Country
+	FROM [cvs].[Auctions] a
+  inner join cvs.Sales ts on ts.saleid = a.saleid AND SaleType = ''Tax''
+  inner join cvs.Properties p on p.id = a.propertyid
+  inner join cvs.propertyowners po on po.propertyownerid = a.PrimaryOwnerId
+  LEFT OUTER JOIN
+	(SELECT propertyownerid, Address1, Address2, City, State, PostalCode, Country,
+			ROW_NUMBER() OVER (PARTITION BY PropertyOwnerId ORDER BY Status ASC, AddressIndex DESC) rownum
+	 FROM cvs.PropertyOwnerAddresses) poa ON poa.propertyownerid = po.PropertyOwnerId AND poa.rownum = 1
+  where NameBusiness IS NOT NULL AND LEN(NameBusiness) > 0
+  and a.State in (10)', 'Tax Bill Number,Owner First,Owner Last,Owner Business,Owner Address 1,Owner Address 2,Owner City,Owner State,Owner Postal Code,Owner Country,Parcel Address 1,Parcel Address 2,Parcel City,Parcel State,Parcel Postal Code,Parcel Country', 67, 1, NULL, 0, NULL, 0, 0, '2016-08-10 15:40:32.000', NULL, NULL)
+EXEC(N'INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES (''3e5c434c-f131-47bd-bd4e-aa687ae4bfb8'', ''Press release numbers'', ''Monthly press release numbers for Danos'', 0, N''DECLARE @results TABLE
+(
+	Label varchar(200),
+	Info varchar(500),
+	OrderIndex int
+)
+
+DECLARE @saleDate DATETIME
+SET @saleDate = (SELECT StartTime FROM cvs.Sales WHERE saleid = ''''<FILTER>'''' AND SaleType = ''''Adj'''')
+
+DECLARE @prevSaleDate DATETIME
+SET @prevSaleDate = (SELECT TOP 1 StartTime FROM cvs.Sales WHERE StartTime < @saleDate AND SaleType = ''''Adj'''' ORDER BY EndTime DESC)
+
+DECLARE @totalCanceled int
+SET @totalCanceled = (SELECT COUNT(*)
+	FROM cvs.auctions a
+	WHERE a.AuctionType = ''''Adjudication'''' AND a.State IN (20)
+	AND a.AuctionId IN (SELECT taxsalepropertyid 
+						FROM cvs.AuctionStateHistory ash 
+						WHERE ash.ToState = 1 AND ash.TaxSalePropertyId = a.AuctionId)
+	AND a.AuctionId IN (SELECT taxsalepropertyid
+						FROM cvs.AuctionStateHistory ash
+						where ash.tostate = 20 AND ash.taxsalepropertyid = a.AuctionId AND ash.CreatedOn > @prevSaleDate))
+
+DECLARE @redemptions TABLE
+(
+	total int,
+	value_del decimal(19,5)
+)
+
+insert into @redemptions
+SELECT COUNT(DISTINCT(p.id)), SUM(pp.tot)
+FROM cvs.auctions a
+INNER JOIN cvs.Properties p ON p.Id = a.PropertyId
+INNER JOIN (SELECT pt.propertyid, SUM(pt.total) AmountDue
+                   FROM cvs.PropertyTaxes pt
+				   WHERE pt.Year <> 2015
+				   GROUP BY pt.PropertyId) pt_2 ON pt_2.PropertyId = p.id
+inner JOIN (SELECT pp.AccountNumber, pp.PropertyType, SUM(pp.Total) tot
+			FROM cvs.PropertyPayments pp
+			WHERE source <> ''''TEMP''''
+			GROUP BY pp.AccountNumber, pp.PropertyType) pp ON pp.AccountNumber = p.AccountNumber AND pp.PropertyType = p.PropertyType
+WHERE a.AuctionType = ''''Adjudication'''' AND a.State IN (20) AND pt_2.amountdue = 0
+AND EXISTS (SELECT taxsalepropertyid 
+					FROM cvs.AuctionStateHistory ash 
+					WHERE ash.ToState = 1 AND ash.TaxSalePropertyId = a.AuctionId)
+AND EXISTS (SELECT taxsalepropertyid
+					FROM cvs.AuctionStateHistory ash
+					where ash.tostate = 20 AND ash.taxsalepropertyid = a.AuctionId AND ash.CreatedOn > @prevSaleDate)						
+										
+
+DECLARE @topAuctions TABLE
+(
+	label VARCHAR(500),
+	amount nvarchar(12)
+)
+INSERT INTO @topAuctions
+        ( label, amount )
+SELECT * FROM (SELECT TOP 1 p.Address1 + '''' ('''' + p.AccountNumber + '''')'''' hp, CAST(b.amount AS NVARCHAR(12)) hs
+FROM cvs.Auctions a 
+INNER JOIN cvs.Properties p ON p.Id = a.PropertyId
+INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
+INNER JOIN PRODAUCTION.auction.dbo.auction a2 ON a2.id = a.AuctionId
+INNER JOIN PRODAUCTION.auction.dbo.bid b ON b.id = a2.winningbidid
+WHERE a.state = 30 AND sale.SaleId = ''''<FILTER>''''
+ORDER BY b.amount DESC) m
+
+insert into @results
+-- Label
+SELECT ''''Selected Sale: '''', CAST(@saleDate AS nvarchar(30)), 1 
+insert into @results
+-- Previous Sale
+SELECT ''''Previous Sale: '''', CAST(@prevSaleDate AS nvarchar(30)), 2
+insert into @results
+-- Sale count
+SELECT ''''#Properties in Sale: '''', CAST(COUNT(*) as nvarchar(12)) AS saleCount, 3
+FROM cvs.auctions a
+INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
+WHERE a.State in (10,30,40) AND sale.saleid = ''''<FILTER>''''
+insert into @results
+-- Vacant Count
+SELECT ''''#Possible vacant lots in Sale: '''', CAST(COUNT(DISTINCT a.AuctionId) as nvarchar(12)) AS ''''Vacant'''', 4
+FROM cvs.auctions a 
+INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
+WHERE  a.AuctionType = ''''Adjudication''''
+AND a.State in (10,30,40) AND sale.saleid = ''''<FILTER>''''
+AND a.PropertyId IN (SELECT ass.PropertyId FROM 
+						cvs.Assessments ass
+						INNER JOIN cvs.AssessmentTypes asst ON asst.AssessmentTypeId = ass.AssessmentTypeId
+						WHERE ass.PropertyId = a.PropertyId AND ass.IsDeleted = 0 AND asst.Name = ''''Improvement'''' AND ass.Amount = 0)
+AND a.PropertyId IN (SELECT ass.PropertyId FROM 
+						cvs.Assessments ass
+						INNER JOIN cvs.AssessmentTypes asst ON asst.AssessmentTypeId = ass.AssessmentTypeId
+						WHERE ass.PropertyId = a.PropertyId AND ass.IsDeleted = 0 AND asst.Name = ''''Land'''' AND ass.Amount > 0)
+insert into @results
+-- Letters COUNT
+SELECT ''''Mail notifications sent: '''', cast(COUNT(*) as nvarchar(12)) as ''''Mail Sent'''', 5
+FROM ma'', ''Press Release Numbers'', 101, 1, N''SELECT
+CONVERT(VARCHAR(100), StartTime, 106) + '''' Sale'''',
+SaleId
+FROM cvs.Sales
+WHERE EndTime < GETDATE()
+AND SaleType = ''''Adj''''
+ORDER BY StartTime desc'', 0, ''Adjudication Sale'', 0, 0, ''2016-05-04 13:27:58.000'', NULL, NULL)')
+EXEC(N'UPDATE [dbo].[DataExports] SET [Query].WRITE(N''il.Campaigns c
+INNER JOIN mail.letters l  on l.campaignid = c.CampaignId
+INNER JOIN cvs.Auctions a ON a.AuctionId = l.PrimaryDataId
+INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
+WHERE CampaignType = ''''EditableAuctionBasedNas'''' AND sale.saleid = ''''<FILTER>''''						
+insert into @results
+-- Average delinquency
+SELECT ''''Average tax delinquency: '''', cast(AVG(del.tot) as nvarchar(12)) as ''''Avg tax'''', 6
+FROM cvs.auctions a 
+INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
+INNER JOIN cvs.Properties p ON p.Id = a.PropertyId
+LEFT OUTER JOIN (SELECT pt.PropertyId, SUM(pt.Total) tot
+				FROM cvs.PropertyTaxes pt
+				INNER JOIN cvs.TaxTypes tt ON tt.TaxTypeId = pt.TaxTypeId
+				WHERE pt.Status = 2 AND tt.TaxCode <> ''''67''''
+				GROUP BY pt.PropertyId) del ON del.PropertyId = p.Id
+WHERE sale.saleid = ''''<FILTER>''''
+insert into @results
+-- Average years delinquent
+SELECT ''''Average years delinquent'''', CAST(AVG(main.years_delinquent) AS NVARCHAR(12)) AS ''''Avg years'''', 7
+FROM(
+	SELECT p.AccountNumber, YEAR(GETDATE()) - MIN(pt.Year) years_delinquent
+	FROM cvs.auctions a 
+	INNER JOIN cvs.Properties p ON p.Id = a.PropertyId
+	INNER JOIN cvs.PropertyTaxes pt ON pt.PropertyId = p.Id
+	INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
+	WHERE a.AuctionType = ''''Adjudication'''' AND pt.Status = 2 AND sale.saleid = ''''<FILTER>''''
+	AND a.AuctionId IN (SELECT taxsalepropertyid 
+					FROM cvs.AuctionStateHistory ash 
+					WHERE ash.ToState = 1 AND ash.TaxSalePropertyId = a.AuctionId)
+	GROUP BY p.AccountNumber
+) main
+insert into @results
+-- Average assessement
+SELECT ''''Average assessment: ''''	, cast(AVG(main.amt) as nvarchar(12)) as ''''Avg assessment'''', 8
+ FROM
+(
+	SELECT SUM(ass.Amount) amt
+	FROM cvs.auctions a 
+	INNER JOIN cvs.Properties p ON p.Id = a.PropertyId
+	INNER JOIN cvs.Assessments ass ON ass.PropertyId = p.Id
+	INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
+	WHERE a.AuctionType = ''''Adjudication''''  AND ass.IsDeleted = 0
+	AND a.State in (10,30,40) AND sale.saleid = ''''<FILTER>''''
+	GROUP BY p.Id
+) main
+insert into @results
+-- Number sold
+SELECT ''''Number sold'''', CAST(COUNT(*) AS NVARCHAR(12)) AS ''''# Sold'''', 9
+FROM cvs.Auctions a 
+INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
+WHERE a.state = 30 AND sale.SaleId = ''''<FILTER>''''
+insert into @results
+-- Value of winning bids
+SELECT ''''Winning bids total'''', CAST(SUM(b.amount) AS nvarchar(12)) AS ''''Total bids'''', 10
+FROM cvs.Auctions a 
+INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
+INNER JOIN PRODAUCTION.auction.dbo.auction a2 ON a2.id = a.AuctionId
+INNER JOIN PRODAUCTION.auction.dbo.bid b ON b.id = a2.winningbidid
+WHERE a.state = 30 AND sale.SaleId = ''''<FILTER>''''
+insert into @results
+-- Number not sold
+SELECT ''''Number not sold'''', CAST(COUNT(*) AS NVARCHAR(12)) AS ''''# Not Sold'''', 11
+FROM cvs.Auctions a 
+INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''''Adj''''
+WHERE a.state = 40 AND sale.SaleId = ''''<FILTER>''''
+insert into @results
+-- Highest seller
+SELECT TOP 1 ''''Highest selling property address'''' , label, 12 FROM @topAuctions
+insert into @results
+SELECT TOP 1 ''''Highest selling property amount'''', amount, 13 FROM @topAuctions
+insert into @results
+-- Cancelled since prior sale
+SELECT ''''Canceled (non-redemption) since '''' +  CAST(@prevSaleDate AS nvarchar(30)), CAST((select @totalCanceled - (select top 1 total from @redemptions)) AS NVARCHAR(15)), 14
+insert into @results
+-- Redeemed since prior sale
+SELECT ''''#Redeemed since '''' +  CAST(@prevSaleDate AS nvarchar(30)), CAST((select top 1 total from @redemptions) AS NVARCHAR(15)), 15
+insert into @results
+-- $Value to City of redemptions since prior sale
+SELECT ''''$Redeemed since '''' +  CAST(@prevSaleDate AS nvarchar(30)), CAST((select top 1 value_del from @redemptions) AS NVARCHAR(15)), 16
+insert into @results
+-- Deposits since prior sale
+SELECT ''''#Deposits since '''' +  CAST(@prevSaleDate AS nvarchar(30)), CAST(COUNT(DISTINCT a.AuctionId) as nvarchar(15)),16
+FROM cvs.auctions a 
+I'',NULL,NULL) WHERE [Id] = ''3e5c434c-f131-47bd-bd4e-aa687ae4bfb8''
+UPDATE [dbo].[DataExports] SET [Query].WRITE(N''NNER JOIN cvs.AuctionStateHistory ash ON ash.TaxSalePropertyId = a.AuctionId
+WHERE a.AuctionType = ''''Adjudication'''' AND ash.ToState = 2 AND CAST(ash.CreatedOn AS DATE) > @prevSaleDate
+insert into @results
+-- LA deposits sinct prior sale
+SELECT ''''#LA Deposits since '''' +  CAST(@prevSaleDate AS nvarchar(30)), CAST(COUNT(DISTINCT a.AuctionId) as nvarchar(15)),17
+FROM cvs.auctions a 
+INNER JOIN cvs.AuctionStateHistory ash ON ash.TaxSalePropertyId = a.AuctionId
+WHERE a.AuctionType = ''''Adjudication'''' AND ash.ToState = 2 AND CAST(ash.CreatedOn AS DATE) > @prevSaleDate
+AND a.AuctionId IN (SELECT ar.AuctionId
+					FROM cvs.Deposits ar
+					INNER JOIN cvs.Purchasers pu ON pu.PurchaserId = ar.PurchaserId
+					INNER JOIN CivicSource.dbo.AuctioneerProfiles ap ON ap.Username = pu.Username
+					WHERE ar.AuctionId = a.AuctionId AND ar.Status <> 3 AND ap.State = ''''LA'''')
+
+SELECT Label,Info from @results order by OrderIndex'',NULL,NULL) WHERE [Id] = ''3e5c434c-f131-47bd-bd4e-aa687ae4bfb8''
+')
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('af2c4bb5-a2e6-47c5-8e05-bfa3c37a5860', 'Bankruptcy (Person) List', 'List of person owners of properties (with active auctions) to send for bankruptcy check', 0, N'select ts.TaxAuthorityPrefix + p.accountnumber, 
+	CASE WHEN LEN(po.NameFirst) > 0 THEN po.namefirst ELSE '''' END,
+	CASE WHEN LEN(po.namelast) > 0 THEN po.namelast ELSE '''' END, 
+	'''', --CASE WHEN LEN(po.NameBusiness) > 0 THEN po.NameBusiness ELSE '''' END, 
+	CASE WHEN LEN(poa.Address1) > 0 THEN poa.Address1 ELSE '''' END, 
+	CASE WHEN LEN(poa.Address2) > 0 THEN poa.Address2 ELSE '''' END, 
+	CASE WHEN LEN(poa.City) > 0 THEN poa.City ELSE '''' END, 
+	poa.State,
+	poa.PostalCode,
+	poa.Country,
+	CASE WHEN LEN(p.Address1) > 0 THEN p.Address1 ELSE '''' END,
+	CASE WHEN LEN(p.Address2) > 0 THEN p.Address2 ELSE '''' END,
+	CASE WHEN LEN(p.City) > 0 THEN p.City ELSE '''' END,
+	p.State,
+	p.PostalCode,
+	p.Country
+	FROM [cvs].[Auctions] a
+  inner join cvs.Sales ts on ts.saleid = a.saleid AND SaleType = ''Tax''
+  inner join cvs.Properties p on p.id = a.propertyid
+  inner join cvs.propertyowners po on po.propertyownerid = a.PrimaryOwnerId
+  LEFT OUTER JOIN
+	(SELECT propertyownerid, Address1, Address2, City, State, PostalCode, Country,
+			ROW_NUMBER() OVER (PARTITION BY PropertyOwnerId ORDER BY Status ASC, AddressIndex DESC) rownum
+	 FROM cvs.PropertyOwnerAddresses) poa ON poa.propertyownerid = po.PropertyOwnerId AND poa.rownum = 1
+  where NameLast IS NOT NULL AND LEN(NameLast) > 0
+  and a.State in (10)', 'Tax Bill Number,Owner First,Owner Last,Owner Business,Owner Address 1,Owner Address 2,Owner City,Owner State,Owner Postal Code,Owner Country,Parcel Address 1,Parcel Address 2,Parcel City,Parcel State,Parcel Postal Code,Parcel Country', 68, 1, NULL, 0, NULL, 0, 0, '2016-06-21 18:19:57.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('7a260099-833c-4521-a317-c2a514ad2a2e', 'Mobile Home Report', 'Properties that contain an improvement without land', 0, N'Select 
+   ''"'' + accountnumber + ''"'', 
+   REPLACE(REPLACE(REPLACE(P.legaldescription,char(10),'' ''),char(13),'' ''),''  '','' ''),
+   Case
+      When IsMobileHome = 1 Then ''Yes''
+	  When IsMobileHome = 0 Then ''No''
+   End,
+   LEFT(DATENAME( m, StartTime),3) +'' ''+ DATENAME(yyyy,StartTime) + '' Tax Sale'' AS Name
+From cvs.Properties P
+Left Join cvs.Auctions A on A.PropertyID = P.ID and A.State = 10
+Left Join cvs.Sales TS on TS.SaleID = A.SaleID AND SaleType = ''Tax''
+Where IsMobileHome = 1 or (P.Status = 2 and 
+(P.legaldescription like ''%IMP ON%'') or
+(P.legaldescription like ''%IMPROVEMENT ON%'') or
+(P.legaldescription like ''%MOBILE HOME ON%'') or
+(P.legaldescription like ''%TRAILER ON%'') or
+(P.legaldescription like ''%LOCATED ON LAND%'') or 
+(P.legaldescription like ''%ON LAND OF%'') or
+(P.legaldescription like ''%ON LAND ASSESSED TO%'') or
+(P.legaldescription like ''%ON THE PROPERTY OF%'') or
+(P.legaldescription like ''%MOBILE @%'')
+)', 'Account Number,Legal Description,Mobile Home Flag,Tax Sale', 95, 1, NULL, 0, NULL, 0, 0, '2016-08-17 14:24:34.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('6e1a8233-c2f8-45dc-aba6-c4fc84ea6098', 'Properties Excluded From Tax Sale', 'List of all properties canceled from the current tax sale due to an exclusion', 0, N'
+/* Auction States */
+Declare @Auction_Candidate         Int = 0
+Declare @Auction_Public            Int = 1
+Declare @Auction_Researching       Int = 2
+Declare @Auction_Research_Complete Int = 3
+Declare @Auction_For_Sale          Int = 10
+Declare @Auction_Requires_Review   Int = 15
+Declare @Auction_Canceled          Int = 20
+Declare @Auction_Sold              Int = 30
+Declare @Auction_Not_Sold          Int = 40
+
+SELECT 
+   ''"'' + PE.AccountNumber + ''"'',
+   PE.Type,
+   PE.Source, 
+   PE.CreatedBy,
+   Convert(VarChar(10),PE.ExpiresOn,101),
+   LEFT(DATENAME( m, StartTime),3) +'' ''+ DATENAME(yyyy,StartTime) + '' Tax Sale'' AS Name
+  FROM [cvs].[Auctions] A
+  Join cvs.Sales TS on TS.SaleId = A.SaleID AND SaleType = ''Tax''
+  Join cvs.Properties P on P.Id = A.PropertyID
+  Join cvs.PropertyExclusions PE on PE.PropertyType = P.PropertyType and PE.AccountNumber = P.AccountNumber
+  Where (TS.IsRefreshing = 1 OR GETDATE() < TS.EndTime) and
+        A.State = @Auction_Canceled and
+		PE.ExpiresOn >= A.CreatedOn  
+  ', 'Account Number,Exclusion Type,Exclusion Source,Created By,Expires On,Tax Sale', 33, 1, NULL, 0, NULL, 0, 0, '2016-08-22 18:39:02.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('ad714e70-b5e9-4de0-bb9b-c652b0b787b2', 'Auctions without calls', 'Current auctions where no calls have been made', 0, N'DECLARE @currentTaxSaleID AS uniqueidentifier    select TOP 1 @currentTaxSaleID = ts.SaleId from cvs.Sales ts where SaleType = ''tax'' ORDER BY EndTime desc      
+IF (@currentTaxSaleID is not null)    BEGIN     
+DECLARE @db VARCHAR(50)
+SELECT  @db = CASE WHEN SUBSTRING(DB_NAME(), 0,
+                                  CHARINDEX(''_'', DB_NAME(),
+                                            CHARINDEX(''_'', DB_NAME(), 0) + 1)) = ''''
+                   THEN ''CivicSource''
+                   ELSE SUBSTRING(DB_NAME(), 0,
+                                  CHARINDEX(''_'', DB_NAME(),
+                                            CHARINDEX(''_'', DB_NAME(), 0) + 1))
+              END
+DECLARE @sql NVARCHAR(500)
+SET @sql = ''SELECT @TAPrefix = ta.Prefix FROM '' + @db + ''.dbo.TaxAuthorities ta WHERE ''''''
+    + @db + ''_'''' + ta.SafeName = DB_NAME()''
+DECLARE @TaxAuthorityPrefix VARCHAR(3)
+EXEC sp_executesql @sql, N''@TAPrefix VARCHAR(3) OUTPUT'', @TAPrefix = @TaxAuthorityPrefix OUTPUT
+SELECT    @TaxAuthorityPrefix AS TaxAuthorityPrefix,    p.AccountNumber,  
+--CASE po.NamePrefix when null then '''' ELSE po.NamePrefix END + CASE po.NameFirst when null then '''' ELSE '' '' + po.NameFirst END + CASE po.NameMiddle when null then '''' ELSE '' '' + po.NameMiddle END + CASE po.NameLast when null then '''' ELSE '' '' + po.NameLast END + CASE po.NameSuffix when null then '''' ELSE '' '' + po.NameSuffix END,
+--CASE po.SpousePrefix when null then '''' ELSE po.SpousePrefix END + CASE po.SpouseFirst when null then '''' ELSE '' '' + po.SpouseFirst END + CASE po.SpouseMiddle when null then '''' ELSE '' '' + po.SpouseMiddle END + CASE po.SpouseLast when null then '''' ELSE '' '' + po.SpouseLast END + CASE po.SpouseSuffix when null then '''' ELSE '' '' + po.SpouseSuffix END,
+--CASE po.CareOfPrefix when null then '''' ELSE po.CareOfPrefix END + CASE po.CareOfFirst when null then '''' ELSE '' '' + po.CareOfFirst END + CASE po.CareOfMiddle when null then '''' ELSE '' '' + po.CareOfMiddle END + CASE po.CareOfLast when null then '''' ELSE '' '' + po.CareOfLast END + CASE po.CareOfSuffix when null then '''' ELSE '' '' + po.CareOfSuffix END,
+--po.Business,REPLACE(po.UnparsedNameAndAddress, char(13) + char(10),'' ''),
+dbo.GetPropertyOwnerName(po.PropertyOwnerId),
+poa.City,    poa.[State],    poa.PostalCode,    poa.Country     from    cvs.Auctions a     left join cvs.Properties p on a.PropertyId = p.Id     
+ left join cvs.PropertyOwners po on po.PropertyId = p.Id     left join cvs.Sales ts on ts.SaleId = a.SaleId AND SaleType = ''Tax''
+ left join cvs.PropertyOwnerAddresses poa on poa.PropertyOwnerId = po.PropertyOwnerId and poa.Source = 2  where    a.[State] = 0    
+ and    (select COUNT(*) from tel.Calls c where c.AccountNumber = p.AccountNumber) = 0    END    ELSE      select ''No Results'' as [Return]', 'Tax Authority,Account Number,Owner Names,City, State, Postal Code, Country', 152, 1, NULL, 0, NULL, 0, 0, '2016-04-27 18:33:13.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('ae9cbbef-0bc2-4b73-8491-d6a187e4c1f2', 'Adjudication Sale Results', 'Results of past adjudication sales', 0, N'
+SELECT ''"'' + p.AccountNumber + ''"'',
+a.LotNumber,
+CONVERT(VARCHAR(100), StartTime, 106) + '' Sale'',
+CONVERT(VarChar(10),StartTime,101),
+p.Address1 + CASE WHEN p.Address2 IS NOT NULL THEN '' '' + p.Address2 ELSE '''' END,
+a.startingprice,
+a.Price,
+pmp.NameOnDeed,
+ap.FirstName + '' '' + ap.LastName,
+ ap.Email,
+''('' + ap.AreaCode + '') '' + ap.Prefix + ''-'' + ap.Suffix
+FROM cvs.Properties p
+INNER JOIN cvs.auctions a ON a.PropertyId = p.Id
+INNER JOIN cvs.Sales sale ON sale.SaleId = a.SaleId AND SaleType = ''Adj''
+INNER JOIN cvs.PrimaryMarketPurchases pmp ON pmp.AuctionId = a.AuctionId
+INNER JOIN cvs.Purchases pur ON pur.PurchaseId = pmp.PurchaseId and pur.status = 0
+INNER JOIN cvs.Purchasers puser ON puser .PurchaserId = pur.Purchaser
+INNER JOIN civicsource.dbo.auctioneerprofiles ap ON ap.username = puser.username
+WHERE a.state = 30 AND Sale.EndTime < GETDATE()
+', 'Tax Bill Number,Auction ID,Adjudication Sale,Sale Date,Address,Starting Price,Price,Winner Name on Deed,Winner,Winner Email,Winner Telephone', 24, 1, NULL, 0, NULL, 0, 1, '2016-08-22 21:03:35.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('73f944e9-147c-4980-a22a-dc37e464907b', 'Revenue & Expense Detail with Dates', 'Each revenue and expense line item, not grouped or summarized, for each auction in a terminal state, i.e., sold, not sold or canceled', 0, N'select	p.accountnumber, convert(varchar(10), s.StartTime, 20) [Date], case when a.state = 30 then ''Sold'' when a.state = 40 then ''Not Sold'' when a.state = 20 then ''Canceled'' end State ,/*a.invoicedon, a.invoicedas,*/ r.Code, r.Name, r.Revenue [Cost], convert(varchar(10), r.CreatedOn, 20) [CostDate], r.ActualExpense [Expense], convert(varchar(10), e.CreatedOn, 20) [ExpenseDate]
+from	cvs.properties p		
+		inner join cvs.auctions a	
+			on a.propertyid = p.id
+		inner join cvs.sales s
+			on a.saleid = s.saleid AND SaleType = ''Adj''
+		inner join acc.Receivable r
+			on r.auction = a.auctionid
+		left join acc.expense e
+			on e.receivable = r.receivableid
+where	a.state > 10		
+order by p.accountnumber, r.code', 'Account Number,Date,State,Code,Name,Cost,Cost Date,Expense Date', 20, 1, NULL, 0, NULL, 0, 1, '2016-05-05 00:34:01.000', NULL, NULL)
+INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('bcdd4ea0-50be-4f8f-b5c4-f29787f5ee14', 'Tax Sale Fees', 'Displays both percent and itemized fees associated with a tax sale', 0, N'SELECT	SUM(case WHEN tt.Category NOT IN (5,6) THEN pt.Balance ELSE 0 END) [Tax],
+		SUM(pt.Interest) [Int],
+		SUM(pt.Penalty) [Pen],
+		SUM(pt.Collection) [9.5% Fee],
+		SUM(case WHEN tt.Category IN (5,6) THEN pt.Balance ELSE 0 END) [Itemized Fee]
+FROM	cvs.Auctions a
+		INNER JOIN cvs.SellableTaxes pt
+			ON pt.TaxSalePropertyId = a.AuctionId
+		INNER JOIN cvs.TaxTypes tt
+			ON tt.TaxTypeId = pt.TaxTypeId
+WHERE	a.State = 10 AND a.SaleId = ''<FILTER>''', 'Tax, Interest, Penalty, 9.5% Fee, Itemized Fee', 15, 1, N'SELECT TOP 1
+        LEFT(DATENAME(m, ts.StartTime), 3) + '' '' + DATENAME(yyyy, StartTime)
+        + '' Tax Sale'' AS Name ,
+        ts.SaleId
+FROM    cvs.Sales ts
+WHERE   SaleType = ''tax''
+ORDER BY EndTime DESC', 0, 'Tax Sale', 0, 0, '2016-06-24 16:27:24.000', NULL, NULL)
 INSERT INTO [dbo].[DataExports] ([Id], [Name], [Description], [Language], [Query], [ColumnHeaders], [Downloads], [IsVisible], [FilterQuery], [FilterLanguage], [FilterLabel], [UseDateRange], [MultiTA], [LastDownloaded], [GroupByColumns], [SubQuery]) VALUES ('493dbf2a-2ee9-4019-9da2-fbe33679a7cb', 'Unsold properties', 'Properties that did not sell in the last tax sale.', 0, N'select p.AccountNumber, p.Address1, ''$'' + CONVERT(varchar(20), CONVERT(money,a.Price),1), p.LegalDescription
 from
 cvs.Auctions a
