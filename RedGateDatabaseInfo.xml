@@ -57,7 +57,6 @@
     <DataWriteAllFilesInOneDirectory>True</DataWriteAllFilesInOneDirectory>
   </WriteToFileOptions>
   <DataFileSet>
-    <Count>1</Count>
-    <DataFile>dbo.DataExports_Data.sql</DataFile>
+    <Count>0</Count>
   </DataFileSet>
 </DatabaseInformation>
