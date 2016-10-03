@@ -1,2 +1,0 @@
-CREATE USER [ReturnScannerUser] WITHOUT LOGIN
-GO
