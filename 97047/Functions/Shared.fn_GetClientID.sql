@@ -1,0 +1,21 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+CREATE FUNCTION [Shared].[fn_GetClientID]()
+RETURNS INT
+AS
+BEGIN
+	
+	DECLARE @clientID int
+	SELECT TOP 1 @clientID = ClientID
+	FROM Management.Client2C  
+
+	RETURN @clientID
+END
+
+
+
+
+GO
