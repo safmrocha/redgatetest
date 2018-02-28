@@ -5,7 +5,8 @@ CREATE TABLE [dbo].[Person]
 [MiddleInitial] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [LastName] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [CreatedDt] [datetime] NOT NULL CONSTRAINT [DF_Person_CreatedDt] DEFAULT (getdate()),
-[LastModifiedDt] [datetime] NOT NULL CONSTRAINT [DF_Person_LastModifiedDt] DEFAULT (getdate())
+[LastModifiedDt] [datetime] NOT NULL CONSTRAINT [DF_Person_LastModifiedDt] DEFAULT (getdate()),
+[EmailAddress] [varchar] (250) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
 ) ON [PRIMARY]
 GO
 SET QUOTED_IDENTIFIER ON
@@ -77,8 +78,8 @@ BEGIN
 	SET NOCOUNT ON;     
 	IF UPDATE(LastModifiedDt)   
 	BEGIN    
-		INSERT INTO [SnapShot].Person (Id, FirstName, MiddleInitial, LastName, CreatedDt, LastModifiedDt)
-		SELECT i.Id, i.FirstName, i.MiddleInitial, i.LastName, i.CreatedDt, i.LastModifiedDt    
+		INSERT INTO [SnapShot].Person (Id, FirstName, MiddleInitial, LastName, CreatedDt, LastModifiedDt, EmailAddress)
+		SELECT i.Id, i.FirstName, i.MiddleInitial, i.LastName, i.CreatedDt, i.LastModifiedDt, i.EmailAddress
 		FROM inserted i
 	END  
 END  

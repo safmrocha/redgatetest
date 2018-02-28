@@ -9,7 +9,8 @@ CREATE TABLE [SnapShot].[Person]
 [MiddleInitial] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [LastName] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [CreatedDt] [datetime] NOT NULL,
-[LastModifiedDt] [datetime] NOT NULL
+[LastModifiedDt] [datetime] NOT NULL,
+[EmailAddress] [varchar] (250) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
 ) ON [PRIMARY]
 GO
 SET QUOTED_IDENTIFIER ON
