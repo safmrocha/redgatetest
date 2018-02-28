@@ -1,0 +1,3 @@
+CREATE SCHEMA [SnapShot]
+AUTHORIZATION [dbo]
+GO
